@@ -1,4 +1,5 @@
 <title>Portal Seguridad y Ambiente — Plantabal</title>
+<script>if(sessionStorage.getItem('ssa_auth')!=='1'){window.location.replace('login.html');}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -322,7 +323,10 @@ footer {
         <span class="logo-sub">Seguridad &amp; Ambiente</span>
       </div>
     </div>
-    <div class="header-badge">Seguridad y Ambiente</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="header-badge">Seguridad y Ambiente</div>
+      <button onclick="sessionStorage.removeItem('ssa_auth');window.location.href='login.html';" style="font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--text-2);background:none;border:1px solid var(--border);border-radius:4px;padding:4px 10px;cursor:pointer;">Salir</button>
+    </div>
   </div>
 </header>
 

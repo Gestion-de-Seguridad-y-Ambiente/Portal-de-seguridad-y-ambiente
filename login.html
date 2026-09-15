@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acceso — Portal SSA Plantabal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F2F4F7;--surface:#FFFFFF;--border:#DDE1EB;
+  --text-1:#0F1520;--text-2:#4B5563;--text-3:#9CA3AF;
+  --accent:#E8B84B;--accent-2:#C99A30;--accent-fg:#1A1200;
+  --danger:#DC2626;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 12px rgba(0,0,0,.05);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.10);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1117;--surface:#161B27;--border:#242A38;
+  --text-1:#E8EAF0;--text-2:#8B92A5;--text-3:#4B5563;
+  --accent:#E8B84B;--accent-2:#F5CC6A;--accent-fg:#1A1200;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.3);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.4);
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1117;--surface:#161B27;--border:#242A38;
+  --text-1:#E8EAF0;--text-2:#8B92A5;--text-3:#4B5563;
+  --accent:#E8B84B;--accent-2:#F5CC6A;--accent-fg:#1A1200;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.3);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.4);
+}
+body{background:var(--bg);color:var(--text-1);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.5;min-height:100vh;display:flex;flex-direction:column;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;}
+.header-inner{max-width:1100px;margin:0 auto;height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.logo-block{display:flex;align-items:center;}
+.logo-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:.03em;text-transform:uppercase;color:var(--text-1);display:block;line-height:1.1;}
+.logo-sub{font-size:11px;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-top:1px;}
+.header-badge{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-2);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);background:color-mix(in srgb,var(--accent) 10%,transparent);padding:4px 10px;border-radius:4px;}
+.login-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);width:100%;max-width:380px;padding:36px 32px 32px;}
+.login-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;}
+.login-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--text-1);text-wrap:balance;line-height:1.1;margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--text-2);margin-bottom:28px;line-height:1.5;}
+.accent-bar{width:36px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:24px;}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.field label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);}
+.field input{font-family:'Inter',sans-serif;font-size:14px;color:var(--text-1);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;width:100%;transition:border-color .15s,box-shadow .15s;outline:none;appearance:none;}
+.field input::placeholder{color:var(--text-3);}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent);background:var(--surface);}
+.field input.error{border-color:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 15%,transparent);}
+.error-msg{font-size:12px;color:var(--danger);margin-top:-10px;margin-bottom:8px;display:none;}
+.error-msg.show{display:block;}
+.btn-login{width:100%;margin-top:8px;padding:12px;background:var(--accent);color:var(--accent-fg);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;transition:background .15s,transform .1s;}
+.btn-login:hover{background:var(--accent-2);}
+.btn-login:active{transform:scale(.98);}
+footer{border-top:1px solid var(--border);padding:16px 24px;text-align:center;}
+.footer-inner{font-size:12px;color:var(--text-3);letter-spacing:.03em;}
+@media(max-width:480px){.login-card{padding:28px 20px 24px;}.header-badge{display:none;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <svg width="160" height="40" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="3A Core Materials">
+        <clipPath id="clip3a"><rect x="0" y="2" width="38" height="30" rx="1"/></clipPath>
+        <rect x="0" y="2" width="38" height="30" rx="1" fill="#1A5CA8"/>
+        <g clip-path="url(#clip3a)" opacity=".18">
+          <line x1="-4" y1="36" x2="42" y2="-10" stroke="white" stroke-width="3.5"/>
+          <line x1="4"  y1="36" x2="50" y2="-10" stroke="white" stroke-width="3.5"/>
+          <line x1="12" y1="36" x2="58" y2="-10" stroke="white" stroke-width="3.5"/>
+          <line x1="20" y1="36" x2="66" y2="-10" stroke="white" stroke-width="3.5"/>
+          <line x1="28" y1="36" x2="74" y2="-10" stroke="white" stroke-width="3.5"/>
+          <line x1="-12" y1="36" x2="34" y2="-10" stroke="white" stroke-width="3.5"/>
+          <line x1="-20" y1="36" x2="26" y2="-10" stroke="white" stroke-width="3.5"/>
+        </g>
+        <text x="19" y="25" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="18" fill="white" letter-spacing="-1">3A</text>
+        <text x="19" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="5.5" fill="white" letter-spacing="1.5">COMPOSITES</text>
+        <text x="46" y="22" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="16" fill="#1A3F72" letter-spacing=".5">CORE</text>
+        <text x="46" y="35" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="12" fill="#2BAA8C" letter-spacing=".3">MATERIALS</text>
+      </svg>
+      <div style="margin-left:8px;border-left:1px solid var(--border);padding-left:12px;">
+        <span class="logo-name">Plantabal</span>
+        <span class="logo-sub">Seguridad &amp; Ambiente</span>
+      </div>
+    </div>
+    <div class="header-badge">Acceso Restringido</div>
+  </div>
+</header>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-eyebrow">Portal SSA · Plantabal</div>
+    <div class="login-title">Iniciar sesión</div>
+    <p class="login-sub">Ingresa tus credenciales para acceder al portal.</p>
+    <div class="accent-bar"></div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="field">
+        <label for="usuario">Usuario</label>
+        <input type="text" id="usuario" placeholder="Usuario" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="pass">Contraseña</label>
+        <input type="password" id="pass" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <div class="error-msg" id="errorMsg">Usuario o contraseña incorrectos.</div>
+      <button type="submit" class="btn-login">Ingresar al portal</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">Plantabal · Portal de Seguridad y Ambiente &nbsp;·&nbsp; 2026</div>
+</footer>
+
+<script>
+const U = 'ssoma';
+const H = '7ea90feb86504fd254239b0e89905b4e3046228232591caaddce8130da880ead';
+
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const usuario = document.getElementById('usuario').value.trim();
+  const pass = document.getElementById('pass').value;
+  const hash = await sha256(pass);
+  const err = document.getElementById('errorMsg');
+  const ui = document.getElementById('usuario');
+  const pi = document.getElementById('pass');
+
+  if (usuario === U && hash === H) {
+    sessionStorage.setItem('ssa_auth', '1');
+    window.location.href = 'index.html';
+  } else {
+    err.classList.add('show');
+    ui.classList.add('error');
+    pi.classList.add('error');
+    pi.value = '';
+    pi.focus();
+  }
+}
+
+if (sessionStorage.getItem('ssa_auth') === '1') {
+  window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>
