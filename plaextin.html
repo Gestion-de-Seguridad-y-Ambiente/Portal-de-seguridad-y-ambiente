@@ -635,7 +635,11 @@ function estado(r){
   var pr=r.prox_recarga||'';
   if(!pr)return st;
   try{
-    if(/^\d{4}-\d{2}$/.test(pr)) pr=pr+'-01';
+    if(/^\d{4}-\d{2}$/.test(pr)){
+      var _p=pr.split('-'),_y=+_p[0],_m=+_p[1];
+      var _last=new Date(_y,_m,0).getDate(); // last day of month
+      pr=pr+'-'+(_last<10?'0':'')+_last;
+    }
     const d=new Date(pr+'T00:00:00'),t=new Date();t.setHours(0,0,0,0);
     const diff=(d-t)/86400000;
     if(diff<0)return 'VENCIDO';
@@ -645,7 +649,9 @@ function estado(r){
 }
 function daysTo(r){
   try{
-    const d=new Date((r.prox_recarga||'')+'T00:00:00'),t=new Date();t.setHours(0,0,0,0);
+    var _pr2=(r.prox_recarga||'');
+    if(/^\d{4}-\d{2}$/.test(_pr2)){var _p2=_pr2.split('-'),_y2=+_p2[0],_m2=+_p2[1];var _ld2=new Date(_y2,_m2,0).getDate();_pr2=_pr2+'-'+(_ld2<10?'0':'')+_ld2;}
+    const d=new Date(_pr2+'T00:00:00'),t=new Date();t.setHours(0,0,0,0);
     return Math.ceil((d-t)/86400000);
   }catch(e){return null;}
 }
@@ -817,7 +823,6 @@ function renderDashboard(){
   document.getElementById('ribbon').innerHTML=`
     <div class="rib-card tot"><div class="rib-n">${tot}</div><div class="rib-lbl">Total registros</div></div>
     <div class="rib-card ok" onclick="showAllFiltered('VIGENTE')" style="cursor:pointer"><div class="rib-n">${vig}</div><div class="rib-lbl">Vigentes</div></div>
-    <div class="rib-card bad" onclick="showAllFiltered('VENCIDO')" style="cursor:pointer"><div class="rib-n">${ven}</div><div class="rib-lbl">Vencidos</div></div>
     <div class="rib-card warn" onclick="showAllFiltered('POR VENCER')" style="cursor:pointer"><div class="rib-n">${pv}</div><div class="rib-lbl">Por vencer</div></div>
     <div class="rib-card sky" onclick="showTab('bodega')" style="cursor:pointer"><div class="rib-n">${(D.bodega||[]).filter(r=>r.estado==='VIGENTE').reduce((s,r)=>s+(parseInt(r.cantidad)||0),0)}</div><div class="rib-lbl">En stock</div></div>`;
 
@@ -1690,9 +1695,33 @@ function showHistorial(){
     rpHtml += '</tbody></table></div></div><hr style="border:none;border-top:1px solid var(--bdr);margin-bottom:14px">';
   }
 
-  var detHtml = hist.length === 0
-    ? '<div style="padding:30px;text-align:center;color:var(--ink4)">Sin movimientos registrados</div>'
-    : hist.map(function(e){
+  // Group detail rows by YYYY-MM
+  var detHtml;
+  if(hist.length === 0){
+    detHtml = '<div style="padding:30px;text-align:center;color:var(--ink4)">Sin movimientos registrados</div>';
+  } else {
+    var byMesRows = {};
+    hist.forEach(function(e){
+      if(!e.fecha) return;
+      var mes = e.fecha.slice(0,7);
+      if(!byMesRows[mes]) byMesRows[mes]=[];
+      byMesRows[mes].push(e);
+    });
+    var monthNames = {
+      '01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio',
+      '07':'Julio','08':'Agosto','09':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'
+    };
+    detHtml = '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:8px">📋 Detalle de movimientos</div>';
+    Object.keys(byMesRows).sort().reverse().forEach(function(mes,mi){
+      var rows = byMesRows[mes];
+      var parts = mes.split('-');
+      var mesLabel = (monthNames[parts[1]]||parts[1])+' '+parts[0];
+      var uid = 'hist-sec-'+mes.replace('-','');
+      detHtml += '<details open style="margin-bottom:8px;border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden">';
+      detHtml += '<summary style="padding:8px 14px;background:var(--bg);font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px">'+
+        '<span style="background:var(--fire);color:#fff;border-radius:12px;padding:1px 8px;font-size:10px">'+rows.length+'</span>'+
+        mesLabel+'</summary>';
+      detHtml += rows.map(function(e){
         var d  = new Date(e.fecha);
         var ds = d.toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric'});
         return '<div class="mov-hist-row">'+
@@ -1701,6 +1730,9 @@ function showHistorial(){
           '<span>'+e.area+' · CC: '+e.cc+(e.obs?' · '+e.obs:'')+'</span></div>'+
           '<div class="mh-date">'+ds+'</div></div>';
       }).join('');
+      detHtml += '</details>';
+    });
+  }
   document.getElementById('historial-body').innerHTML = rpHtml + detHtml;
   document.getElementById('m-historial').classList.add('on');
 }
