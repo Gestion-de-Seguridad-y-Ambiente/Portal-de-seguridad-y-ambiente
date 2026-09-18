@@ -486,20 +486,27 @@ img{max-width:100%}
         <div class="field">
           <label>Tipo de desecho</label>
           <select id="p_tipo">
+            <option value="C.16.05">C.16.05 · Resinas alquídicas, poliéster, epóxicas, barnices peligrosos</option>
             <option value="C.18.06">C.18.06 · Substratos, resinas, foto polímeros</option>
+            <option value="ES-01">ES-01 · Envases vacíos de agroquímicos con triple lavado</option>
+            <option value="ES-03">ES-03 · Plásticos de invernadero</option>
             <option value="ES-04">ES-04 · Neumáticos usados</option>
             <option value="ES-06">ES-06 · Equipos eléctricos/electrónicos en desuso</option>
             <option value="H.52.02">H.52.02 · Sólidos contaminados con mat. peligrosos</option>
+            <option value="NE-03">NE-03 · Aceites minerales usados o gastados</option>
+            <option value="NE-04">NE-04 · Agroquímicos caducados o fuera de especificaciones</option>
             <option value="NE-07">NE-07 · Baterías plomo-ácido usadas</option>
-            <option value="NE-08">NE-08 · Baterías usadas</option>
+            <option value="NE-08">NE-08 · Baterías usadas con Hg, Ni, Cd u otros mat. peligrosos</option>
             <option value="NE-10">NE-10 · Desechos biopeligrosos de atención médica</option>
+            <option value="NE-18">NE-18 · Desechos de soluciones ácidas con pH &lt;2</option>
             <option value="NE-27">NE-27 · Envases contaminados con mat. peligrosos</option>
-            <option value="NE-29">NE-29 · Envases y contenedores vacíos</option>
+            <option value="NE-29">NE-29 · Envases y contenedores vacíos sin previo tratamiento</option>
             <option value="NE-30">NE-30 · EPP contaminado con mat. peligrosos</option>
             <option value="NE-32">NE-32 · Filtros usados de aceite mineral</option>
             <option value="NE-37">NE-37 · Lodos de tratamiento de aguas residuales</option>
             <option value="NE-40">NE-40 · Luminarias/tubos fluorescentes con mercurio</option>
-            <option value="NE-42">NE-42 · Absorbente contaminado con hidrocarburos</option>
+            <option value="NE-42">NE-42 · Adsorbente contaminado con hidrocarburos</option>
+            <option value="NE-43">NE-43 · Adsorbente contaminado con sustancias químicas peligrosas</option>
             <option value="NE-45">NE-45 · Mezclas oleosas / emulsiones hidrocarburo-agua</option>
             <option value="NE-48">NE-48 · Productos químicos caducados</option>
             <option value="NE-49">NE-49 · Tintas, pinturas, resinas peligrosas</option>
@@ -731,6 +738,91 @@ img{max-width:100%}
   </div>
 </div>
 
+<!-- ══════════════ PAGE: PTAR ══════════════ -->
+<div class="page" id="page-ptar">
+  <div class="section-title" style="margin-bottom:3px">🔵 PTAR — Planta de Tratamiento</div>
+  <div class="section-sub">Lectura mensual de caudalímetros · Entradas, salida y lodos</div>
+  <div class="panel2">
+    <div>
+      <div class="card">
+        <div class="card-title">🔵 Nueva lectura</div>
+        <div class="field">
+          <label>Caudalímetro</label>
+          <select id="pt_punto">
+            <option>Lavamanos de encolaje</option>
+            <option>CK, PGS</option>
+            <option>Agua descargada</option>
+            <option>Descarga de lodos</option>
+          </select>
+        </div>
+        <div class="row2">
+          <div class="field" style="margin-bottom:0"><label>Año</label><select id="pt_anio"></select></div>
+          <div class="field" style="margin-bottom:0"><label>Mes</label><select id="pt_mes"></select></div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Lectura del caudalímetro (m³)</label>
+          <input type="number" step="0.01" min="0" id="pt_lectura" placeholder="0.00">
+        </div>
+        <div class="field">
+          <label>Técnico que registra</label>
+          <input type="text" id="pt_tecnico" placeholder="Nombre" list="tecnicos-pt">
+          <datalist id="tecnicos-pt">
+            <option>Viviana</option><option>Érika</option><option>Joel</option>
+            <option>Kevin</option><option>Debbie</option><option>Frank</option>
+          </datalist>
+        </div>
+        <div class="field">
+          <label>Observaciones (opcional)</label>
+          <textarea id="pt_obs" placeholder="Notas..."></textarea>
+        </div>
+        <button class="btn btn-blue" id="pt_submit" style="margin-top:6px">Guardar lectura</button>
+        <div class="form-msg" id="pt_msg" style="color:var(--blue-deep)"></div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:5px;line-height:1.4">
+          El consumo mensual se calcula como diferencia absoluta con el mes anterior.
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="res-head">
+          <div class="res-filters">
+            <select id="pt_fPunto" onchange="renderPTAR()">
+              <option value="">Todos</option>
+              <option>Lavamanos de encolaje</option>
+              <option>CK, PGS</option>
+              <option>Agua descargada</option>
+              <option>Descarga de lodos</option>
+            </select>
+            <select id="pt_fAnio" onchange="renderPTAR()"><option value="">Todos los años</option></select>
+            <select id="pt_fMes" onchange="renderPTAR()"><option value="">Todos los meses</option></select>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('ptar')">⬇ CSV</button>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>Año</th><th>Mes</th><th>Caudalímetro</th><th>Lectura (m³)</th>
+              <th>Consumo (m³)</th><th>Técnico</th><th></th>
+            </tr></thead>
+            <tbody id="pt_tbody"></tbody>
+          </table>
+          <div class="empty-state" id="pt_empty">Aún no hay lecturas.</div>
+        </div>
+        <div class="totals-strip" id="pt_totals"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:8px">📊 Balance mensual</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Selecciona año y mes para ver el balance</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+          <select id="pt_dashAnio" onchange="renderPTARBalance()" style="font-size:.75rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);outline:none"></select>
+          <select id="pt_dashMes" onchange="renderPTARBalance()" style="font-size:.75rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);outline:none"></select>
+        </div>
+        <div id="pt_balance"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════ PAGE: INDICADORES ══════════════ -->
 <div class="page" id="page-indicadores">
   <div class="section-title" style="margin-bottom:3px">Indicadores</div>
@@ -809,6 +901,9 @@ img{max-width:100%}
   <button class="nav-tab" onclick="switchPage('page-captacion',this,'blue')">
     <span class="icon">💧</span>Captación
   </button>
+  <button class="nav-tab" onclick="switchPage('page-ptar',this,'blue')">
+    <span class="icon">🔵</span>PTAR
+  </button>
   <button class="nav-tab" onclick="switchPage('page-indicadores',this,'')">
     <span class="icon">📊</span>Indicadores
   </button>
@@ -858,22 +953,29 @@ const ITEM_LABELS_SHORT = {
   gris:'Cartón (⬜)', rojo:'Peligroso (🔴)', etiquetas:'Etiquetado', volumen:'Volumen'
 };
 const CODIGOS_P = {
+  "C.16.05":"Resinas alquídicas, poliéster, acrílicas, epóxicas, poliuretano, barnices y pinturas peligrosas",
   "C.18.06":"Desechos de substratos, resinas, foto polímeros",
+  "ES-01":"Envases vacíos de agroquímicos con triple lavado",
+  "ES-03":"Plásticos de invernadero",
   "ES-04":"Neumáticos usados o partes de los mismos",
   "ES-06":"Equipos eléctricos y electrónicos en desuso",
   "H.52.02":"Desechos sólidos contaminados con materiales peligrosos",
-  "NE-07":"Baterías usadas plomo-ácido","NE-08":"Baterías usadas",
+  "NE-03":"Aceites minerales usados o gastados",
+  "NE-04":"Agroquímicos caducados o fuera de especificaciones",
+  "NE-07":"Baterías usadas plomo-ácido","NE-08":"Baterías usadas con Hg, Ni, Cd u otros materiales peligrosos",
   "NE-10":"Desechos biopeligrosos activos de atención médica",
+  "NE-18":"Desechos de soluciones ácidas con pH <2",
   "NE-27":"Envases contaminados con materiales peligrosos",
-  "NE-29":"Envases y contenedores vacíos",
+  "NE-29":"Envases y contenedores vacíos de materiales tóxicos sin previo tratamiento",
   "NE-30":"EPP contaminado con materiales peligrosos",
   "NE-32":"Filtros usados de aceite mineral",
-  "NE-37":"Lodos de tratamiento de aguas residuales domésticas",
-  "NE-40":"Luminarias, tubos fluorescentes con mercurio",
-  "NE-42":"Material absorbente contaminado con hidrocarburos",
-  "NE-45":"Mezclas oleosas, emulsiones de hidrocarburos-agua",
+  "NE-37":"Lodos de tratamiento de aguas residuales domésticas con materiales peligrosos",
+  "NE-40":"Luminarias, tubos fluorescentes y focos ahorradores con mercurio",
+  "NE-42":"Material adsorbente contaminado con hidrocarburos",
+  "NE-43":"Material adsorbente contaminado con sustancias químicas peligrosas",
+  "NE-45":"Mezclas oleosas, emulsiones de hidrocarburos-agua, desechos de taladrina",
   "NE-48":"Productos químicos caducados o fuera de especificaciones",
-  "NE-49":"Residuos de tintas, pinturas, resinas peligrosas",
+  "NE-49":"Residuos de tintas, pinturas, resinas con sustancias peligrosas",
   "NE-52":"Suelos contaminados con materiales peligrosos",
   "NE-53":"Cartuchos de impresión de tinta o tóner usados"
 };
@@ -883,7 +985,8 @@ let auditsCache      = [];
 let peligrosoCache   = [];
 let reciclajeCache   = [];
 let captacionCache   = [];
-let fsUnsub = null, pUnsub = null, rUnsub = null, aUnsub = null;
+let ptarCache        = [];
+let fsUnsub = null, pUnsub = null, rUnsub = null, aUnsub = null, ptUnsub = null;
 
 // ══ UTILS ══
 function uid() { return 'x' + Date.now() + Math.random().toString(16).slice(2,7); }
@@ -929,6 +1032,7 @@ function switchPage(id, btn, accent) {
   if (id === 'page-peligrosos')  renderPeligrosos();
   if (id === 'page-reciclaje')   renderReciclaje();
   if (id === 'page-captacion')   { renderCaptacion(); renderDashboard(); }
+  if (id === 'page-ptar')        { renderPTAR(); renderPTARBalance(); }
 }
 
 // ══ AUTH ══
@@ -953,8 +1057,8 @@ document.getElementById('loginPassword').addEventListener('keydown', e => {
 });
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   if (!confirm('¿Cerrar sesión?')) return;
-  [fsUnsub,pUnsub,rUnsub,aUnsub].forEach(u => u && u());
-  auditsCache = []; peligrosoCache = []; reciclajeCache = []; captacionCache = [];
+  [fsUnsub,pUnsub,rUnsub,aUnsub,ptUnsub].forEach(u => u && u());
+  auditsCache = []; peligrosoCache = []; reciclajeCache = []; captacionCache = []; ptarCache = [];
   await auth.signOut();
 });
 auth.onAuthStateChanged(user => {
@@ -996,6 +1100,7 @@ function initAll() {
   startPeligrosoSync();
   startReciclajeSync();
   startCaptacionSync();
+  startPTARSync();
 }
 
 // ══════════════════════════════════════
@@ -1764,6 +1869,13 @@ function populateCaptacionSelects() {
   document.getElementById('a_fAnio').innerHTML = '<option value="">Todos los años</option>' + ANIOS_AGUA.map(y => `<option>${y}</option>`).join('');
   document.getElementById('a_fMes').innerHTML = '<option value="">Todos los meses</option>' + MESES.map(m => `<option>${m}</option>`).join('');
   document.getElementById('a_dashAnio').innerHTML = ANIOS_AGUA.map(y => `<option ${y===nowYear?'selected':''}>${y}</option>`).join('');
+  // PTAR selects
+  document.getElementById('pt_anio').innerHTML = ANIOS_AGUA.map(y => `<option ${y===nowYear?'selected':''}>${y}</option>`).join('');
+  document.getElementById('pt_mes').innerHTML = MESES.map(m => `<option ${m===nowMes?'selected':''}>${m}</option>`).join('');
+  document.getElementById('pt_fAnio').innerHTML = '<option value="">Todos los años</option>' + ANIOS_AGUA.map(y => `<option>${y}</option>`).join('');
+  document.getElementById('pt_fMes').innerHTML = '<option value="">Todos los meses</option>' + MESES.map(m => `<option>${m}</option>`).join('');
+  document.getElementById('pt_dashAnio').innerHTML = ANIOS_AGUA.map(y => `<option ${y===nowYear?'selected':''}>${y}</option>`).join('');
+  document.getElementById('pt_dashMes').innerHTML = MESES.map(m => `<option ${m===nowMes?'selected':''}>${m}</option>`).join('');
 }
 
 function startCaptacionSync() {
@@ -1818,7 +1930,7 @@ function getConsumoLookup() {
     let prev = null;
     arr.forEach(r => {
       const key = `${r.punto}|${r.anio}|${r.mes}`;
-      lookup[key] = prev === null ? null : +(r.lectura - prev).toFixed(2);
+      lookup[key] = prev === null ? null : +Math.abs(r.lectura - prev).toFixed(2);
       prev = r.lectura;
     });
   });
@@ -1893,6 +2005,165 @@ async function delCaptacion(id) {
 }
 
 // ══════════════════════════════════════
+// PTAR MODULE
+// ══════════════════════════════════════
+const PUNTOS_PTAR = ['Lavamanos de encolaje','CK, PGS','Agua descargada','Descarga de lodos'];
+
+function startPTARSync() {
+  if (ptUnsub) ptUnsub();
+  ptUnsub = db.collection('ptar_lecturas').onSnapshot(snap => {
+    ptarCache = snap.docs.map(d => d.data());
+    if (document.getElementById('page-ptar').classList.contains('active')) {
+      renderPTAR(); renderPTARBalance();
+    }
+  }, err => console.error(err));
+}
+
+document.getElementById('pt_submit').addEventListener('click', async () => {
+  const punto   = document.getElementById('pt_punto').value;
+  const anio    = parseInt(document.getElementById('pt_anio').value, 10);
+  const mes     = document.getElementById('pt_mes').value;
+  const lectura = parseFloat(document.getElementById('pt_lectura').value);
+  const tecnico = document.getElementById('pt_tecnico').value.trim();
+  const obs     = document.getElementById('pt_obs').value.trim();
+  const msg     = document.getElementById('pt_msg');
+  if (isNaN(lectura)) {
+    msg.style.color = '#B91C1C'; msg.textContent = 'Ingresa una lectura válida';
+    setTimeout(() => { msg.textContent = ''; msg.style.color = 'var(--blue-deep)'; }, 2600);
+    return;
+  }
+  const existente = ptarCache.find(r => r.punto===punto && r.anio===anio && r.mes===mes);
+  const btn = document.getElementById('pt_submit');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  try {
+    let rec;
+    if (existente) {
+      rec = { ...existente, lectura, tecnico, obs, fecha_registro: new Date().toISOString() };
+    } else {
+      rec = { id: uid(), punto, anio, mes, lectura, tecnico, obs, fecha_registro: new Date().toISOString() };
+    }
+    await db.collection('ptar_lecturas').doc(rec.id).set(rec);
+    document.getElementById('pt_lectura').value = '';
+    document.getElementById('pt_obs').value = '';
+    document.getElementById('pt_tecnico').value = '';
+    msg.textContent = existente ? '✓ Lectura actualizada' : '✓ Lectura guardada';
+    setTimeout(() => msg.textContent = '', 2200);
+  } catch(err) { showToast('❌ Error al guardar'); }
+  finally { btn.disabled = false; btn.textContent = 'Guardar lectura'; }
+});
+
+function getPTARConsumoLookup() {
+  const lookup = {};
+  const porPunto = {};
+  ptarCache.forEach(r => { (porPunto[r.punto] = porPunto[r.punto]||[]).push(r); });
+  Object.keys(porPunto).forEach(p => {
+    const arr = porPunto[p].slice().sort((a,b) => (a.anio-b.anio)||(MESES.indexOf(a.mes)-MESES.indexOf(b.mes)));
+    let prev = null;
+    arr.forEach(r => {
+      const key = `${r.punto}|${r.anio}|${r.mes}`;
+      lookup[key] = prev === null ? null : +Math.abs(r.lectura - prev).toFixed(2);
+      prev = r.lectura;
+    });
+  });
+  return lookup;
+}
+
+function renderPTAR() {
+  const puntoF = document.getElementById('pt_fPunto').value;
+  const anioF  = document.getElementById('pt_fAnio').value;
+  const mesF   = document.getElementById('pt_fMes').value;
+  const lookup = getPTARConsumoLookup();
+  let rows = ptarCache.filter(r =>
+    (!puntoF || r.punto===puntoF) &&
+    (!anioF || String(r.anio)===anioF) &&
+    (!mesF || r.mes===mesF)
+  );
+  rows = rows.slice().sort((a,b) => (b.anio-a.anio)||(MESES.indexOf(b.mes)-MESES.indexOf(a.mes)));
+  const tbody = document.getElementById('pt_tbody');
+  tbody.innerHTML = rows.map(r => {
+    const key = `${r.punto}|${r.anio}|${r.mes}`;
+    const consumo = lookup[key];
+    const cTxt = (consumo===null||consumo===undefined) ? 'N/D (primer registro)' : consumo.toFixed(2);
+    return `<tr>
+      <td>${r.anio}</td>
+      <td>${r.mes}</td>
+      <td><span class="chip chip-blue">${r.punto}</span></td>
+      <td>${r.lectura.toFixed(2)}</td>
+      <td>${cTxt}</td>
+      <td>${r.tecnico||'—'}</td>
+      <td><button class="del-btn" onclick="delPTAR('${r.id}')">✕</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pt_empty').style.display = rows.length ? 'none' : 'block';
+  const consumoVals = rows.map(r => { const k=`${r.punto}|${r.anio}|${r.mes}`; return lookup[k]; }).filter(v=>v!==null&&v!==undefined);
+  const totConsumo = consumoVals.reduce((s,v)=>s+v,0);
+  document.getElementById('pt_totals').innerHTML = `
+    <div class="tstat blue"><div class="v">${rows.length}</div><div class="k">Lecturas</div></div>
+    <div class="tstat blue"><div class="v">${totConsumo.toFixed(2)} m³</div><div class="k">Consumo total filtrado</div></div>
+  `;
+}
+
+function renderPTARBalance() {
+  const anio = parseInt(document.getElementById('pt_dashAnio').value, 10);
+  const mes  = document.getElementById('pt_dashMes').value;
+  const lookup = getPTARConsumoLookup();
+
+  const getVal = (punto) => {
+    const v = lookup[`${punto}|${anio}|${mes}`];
+    return (v !== null && v !== undefined) ? v : null;
+  };
+
+  const entrada1 = getVal('Lavamanos de encolaje');
+  const entrada2 = getVal('CK, PGS');
+  const descargada = getVal('Agua descargada');
+  const lodos = getVal('Descarga de lodos');
+
+  const totalEntrada = (entrada1 !== null || entrada2 !== null)
+    ? ((entrada1||0) + (entrada2||0)) : null;
+  const aguaLiberada = (descargada !== null && lodos !== null)
+    ? Math.max(0, descargada - lodos) : null;
+
+  const fmtVal = (v) => v !== null ? `<strong>${v.toFixed(2)} m³</strong>` : '<span style="color:var(--muted)">Sin dato</span>';
+
+  document.getElementById('pt_balance').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="tstat blue">
+        <div class="v" style="font-size:.85rem">${entrada1!==null?entrada1.toFixed(2)+' m³':'—'}</div>
+        <div class="k">Lavamanos de encolaje</div>
+      </div>
+      <div class="tstat blue">
+        <div class="v" style="font-size:.85rem">${entrada2!==null?entrada2.toFixed(2)+' m³':'—'}</div>
+        <div class="k">CK, PGS</div>
+      </div>
+      <div class="tstat blue">
+        <div class="v" style="font-size:.85rem">${descargada!==null?descargada.toFixed(2)+' m³':'—'}</div>
+        <div class="k">Agua descargada</div>
+      </div>
+      <div class="tstat" style="background:var(--amber-tint);border:1px solid var(--amber-border)">
+        <div class="v" style="font-size:.85rem;color:var(--amber-deep)">${lodos!==null?lodos.toFixed(2)+' m³':'—'}</div>
+        <div class="k">Descarga de lodos</div>
+      </div>
+    </div>
+    <div style="background:var(--surface-2);border:1.5px solid var(--border);border-radius:10px;padding:14px">
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Balance · ${mes} ${anio}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:.82rem">
+        <div style="display:flex;justify-content:space-between"><span>Total entrada (Lavamanos + CK,PGS)</span>${fmtVal(totalEntrada)}</div>
+        <div style="display:flex;justify-content:space-between"><span>Agua descargada</span>${fmtVal(descargada)}</div>
+        <div style="display:flex;justify-content:space-between"><span>Descarga de lodos (reintegrada)</span>${fmtVal(lodos)}</div>
+        <div style="border-top:1.5px solid var(--text);margin-top:4px;padding-top:8px;display:flex;justify-content:space-between;font-weight:700">
+          <span>Agua liberada = Descargada − Lodos</span>${fmtVal(aguaLiberada)}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function delPTAR(id) {
+  if (!confirm('¿Eliminar esta lectura?')) return;
+  try { await db.collection('ptar_lecturas').doc(id).delete(); showToast('Eliminado'); }
+  catch(err) { showToast('❌ Error al eliminar'); }
+}
+
+// ══════════════════════════════════════
 // CSV EXPORT
 // ══════════════════════════════════════
 function csvEscape(v) {
@@ -1909,6 +2180,16 @@ function exportCSV(kind) {
     headers = ['Fecha','Localidad','Tipo','Peso (kg)','Destino','Técnico','Observaciones'];
     rows = reciclajeCache.map(r => [fmtDate(r.fecha), r.localidad, r.tipo, (r.peso||0).toFixed(1), r.destino, r.tecnico, r.obs]);
     filename = 'GE-GA-R9_residuos_comunes_reciclables.csv';
+  } else if (kind === 'ptar') {
+    const lookup = getPTARConsumoLookup();
+    headers = ['Año','Mes','Caudalímetro','Lectura (m³)','Consumo (m³)','Técnico','Observaciones'];
+    rows = ptarCache.slice().sort((a,b)=>(a.anio-b.anio)||(MESES.indexOf(a.mes)-MESES.indexOf(b.mes)))
+      .map(r => {
+        const k = `${r.punto}|${r.anio}|${r.mes}`;
+        const c = lookup[k];
+        return [r.anio, r.mes, r.punto, r.lectura.toFixed(2), (c===null||c===undefined)?'N/D':c.toFixed(2), r.tecnico, r.obs];
+      });
+    filename = 'ptar_lecturas.csv';
   } else {
     const lookup = getConsumoLookup();
     headers = ['Año','Mes','Punto de Captación','Lectura (m³)','Consumo del Mes (m³)','Técnico','Observaciones'];
