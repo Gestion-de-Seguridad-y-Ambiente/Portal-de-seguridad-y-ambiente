@@ -829,6 +829,14 @@ img{max-width:100%}
   <div class="section-sub">Resultados de auditoría de segregación por área y semana</div>
   <div class="ind-filter-row">
     <select id="ind-week-filter"><option value="">Todas las semanas</option></select>
+    <select id="ind-grupo-filter" onchange="renderIndicadores()">
+      <option value="">Todas las plantas</option>
+      <option>Planta Quevedo — Administrativo</option>
+      <option>Planta Quevedo — Operativo</option>
+      <option>PGS</option>
+      <option>Samborondón</option>
+      <option>Cosecha</option>
+    </select>
     <select id="ind-area-filter"><option value="">Todas las áreas</option></select>
   </div>
   <div class="stat-row">
@@ -868,6 +876,14 @@ img{max-width:100%}
   </div>
   <div class="ind-filter-row" style="margin-bottom:10px">
     <select id="hist-week-filter"><option value="">Todas las semanas</option></select>
+    <select id="hist-grupo-filter" onchange="renderHistorial()">
+      <option value="">Todas las plantas</option>
+      <option>Planta Quevedo — Administrativo</option>
+      <option>Planta Quevedo — Operativo</option>
+      <option>PGS</option>
+      <option>Samborondón</option>
+      <option>Cosecha</option>
+    </select>
     <select id="hist-area-filter"><option value="">Todas las áreas</option></select>
   </div>
   <div id="historial-list"></div>
@@ -944,7 +960,7 @@ const GRUPOS_AREAS = [
   ]},
   { grupo: 'PGS', areas: ['PGS 1','PGS 2','OFICINA DE PGS'] },
   { grupo: 'Samborondón', areas: ['SAMBORONDÓN'] },
-  { grupo: 'Cosecha', areas: ['COSECHA'] }
+  { grupo: 'Cosecha', areas: ['COSECHA NORTE','COSECHA SUR','COSECHA CENTRO'] }
 ];
 const AREAS = GRUPOS_AREAS.flatMap(g => g.areas);
 const ITEMS = [
@@ -1427,6 +1443,11 @@ document.getElementById('saveAuditBtn').addEventListener('click', async () => {
 
 // Indicadores
 function getWeeks(audits) { return [...new Set(audits.map(a => a.week))].sort().reverse(); }
+function getGrupoAreas(grupoNombre) {
+  if (!grupoNombre) return AREAS;
+  const g = GRUPOS_AREAS.find(g => g.grupo === grupoNombre);
+  return g ? g.areas : AREAS;
+}
 function populateFilters(audits) {
   const weeks = getWeeks(audits);
   ['ind-week-filter','hist-week-filter'].forEach(id => {
@@ -1440,9 +1461,13 @@ function populateFilters(audits) {
     });
   });
   ['ind-area-filter','hist-area-filter'].forEach(id => {
+    const prefix = id.startsWith('ind') ? 'ind' : 'hist';
+    const grupoSel = document.getElementById(prefix + '-grupo-filter');
+    const grupoVal = grupoSel ? grupoSel.value : '';
+    const areasToShow = getGrupoAreas(grupoVal);
     const sel = document.getElementById(id), cur = sel.value;
     sel.innerHTML = '<option value="">Todas las áreas</option>';
-    AREAS.forEach(a => {
+    areasToShow.forEach(a => {
       const o = document.createElement('option');
       o.value = a; o.textContent = a;
       if (a === cur) o.selected = true;
@@ -1453,11 +1478,13 @@ function populateFilters(audits) {
 function renderIndicadores() {
   const all = auditsCache;
   populateFilters(all);
-  const weekF = document.getElementById('ind-week-filter').value;
-  const areaF = document.getElementById('ind-area-filter').value;
+  const weekF  = document.getElementById('ind-week-filter').value;
+  const grupoF = document.getElementById('ind-grupo-filter').value;
+  const areaF  = document.getElementById('ind-area-filter').value;
   let audits = all;
-  if (weekF) audits = audits.filter(a => a.week === weekF);
-  if (areaF) audits = audits.filter(a => a.area === areaF);
+  if (weekF)  audits = audits.filter(a => a.week === weekF);
+  if (grupoF) { const ga = getGrupoAreas(grupoF); audits = audits.filter(a => ga.includes(a.area)); }
+  if (areaF)  audits = audits.filter(a => a.area === areaF);
   const scores = audits.map(a => a.score).filter(s => s !== null);
   const general = scores.length ? Math.round(scores.reduce((s,v)=>s+v,0)/scores.length) : null;
   const stG = document.getElementById('st-general');
@@ -1506,17 +1533,20 @@ function renderIndicadores() {
   });
 }
 document.getElementById('ind-week-filter').addEventListener('change', renderIndicadores);
+document.getElementById('ind-grupo-filter').addEventListener('change', renderIndicadores);
 document.getElementById('ind-area-filter').addEventListener('change', renderIndicadores);
 
 // Historial
 function renderHistorial() {
   const all = auditsCache;
   populateFilters(all);
-  const weekF = document.getElementById('hist-week-filter').value;
-  const areaF = document.getElementById('hist-area-filter').value;
+  const weekF  = document.getElementById('hist-week-filter').value;
+  const grupoF = document.getElementById('hist-grupo-filter').value;
+  const areaF  = document.getElementById('hist-area-filter').value;
   let audits = all.slice().sort((a,b) => b.id - a.id);
-  if (weekF) audits = audits.filter(a => a.week === weekF);
-  if (areaF) audits = audits.filter(a => a.area === areaF);
+  if (weekF)  audits = audits.filter(a => a.week === weekF);
+  if (grupoF) { const ga = getGrupoAreas(grupoF); audits = audits.filter(a => ga.includes(a.area)); }
+  if (areaF)  audits = audits.filter(a => a.area === areaF);
   const list = document.getElementById('historial-list');
   list.innerHTML = '';
   if (!audits.length) {
@@ -1558,6 +1588,7 @@ function renderHistorial() {
   });
 }
 document.getElementById('hist-week-filter').addEventListener('change', renderHistorial);
+document.getElementById('hist-grupo-filter').addEventListener('change', renderHistorial);
 document.getElementById('hist-area-filter').addEventListener('change', renderHistorial);
 
 // Informe
