@@ -932,13 +932,21 @@ db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const PUNTOS_AGUA = ["Pozo Genética","Pozo Silvicultura","Pozo Comedor","Pozo Caldero","Captación Estero G"];
 const ANIOS_AGUA  = [2024,2025,2026,2027,2028,2029,2030];
-const AREAS = [
-  'MTTO OFICINAS','OFICINA IT','OFICINA PRODUCCIÓN','OPERACIONES',
-  'CALIDAD','TOLA','CK-EMBARQUE','BODEGA','COMPRAS','CALDERO',
-  'OFICINA MADERA VERDE','OFICINA DE SECADO','ADM','DISPENSARIO',
-  'PROYECTOS','SILVICULTURA','PGS','LABORATORIO','CERTIFICACIONES',
-  'CABAÑAS','GENÉTICA','VIVERO'
+const GRUPOS_AREAS = [
+  { grupo: 'Planta Quevedo — Administrativo', areas: [
+    'OFICINA DE E.S.','OFICINA IT','OFICINA PRODUCCIÓN','ADM',
+    'DISPENSARIO','PROYECTOS','CERTIFICACIONES','MTTO OFICINAS','COMPRAS'
+  ]},
+  { grupo: 'Planta Quevedo — Operativo', areas: [
+    'OPERACIONES','CALIDAD','TOLA','CK-EMBARQUE','BODEGA','CALDERO',
+    'OFICINA MADERA VERDE','OFICINA DE SECADO','LABORATORIO',
+    'SILVICULTURA','GENÉTICA','VIVERO','CABAÑAS'
+  ]},
+  { grupo: 'PGS', areas: ['PGS 1','PGS 2','OFICINA DE PGS'] },
+  { grupo: 'Samborondón', areas: ['SAMBORONDÓN'] },
+  { grupo: 'Cosecha', areas: ['COSECHA'] }
 ];
+const AREAS = GRUPOS_AREAS.flatMap(g => g.areas);
 const ITEMS = [
   { id:'negro',     label:'Desechos comunes clasificados correctamente',       color:'#1C1C1C' },
   { id:'azul',      label:'Plásticos reciclables clasificados correctamente',  color:'#1D4ED8' },
@@ -1219,36 +1227,42 @@ function renderAreaGrid() {
   const grid = document.getElementById('areaGrid');
   grid.innerHTML = '';
   let done = 0;
-  AREAS.forEach(area => {
-    const audit = auditsCache.find(a => a.area === area && a.week === currentWeek);
-    const pct = audit ? calcScore(audit.responses) : null;
-    if (audit) done++;
-    const chip = document.createElement('div');
-    chip.className = 'area-chip' + (audit ? ' done' : '');
-    const nameBtn = document.createElement('button');
-    nameBtn.style.cssText = 'flex:1;text-align:left;line-height:1.2;font-size:.74rem;background:none;border:none;color:inherit;cursor:pointer;padding:0;font-weight:600';
-    nameBtn.textContent = area;
-    nameBtn.addEventListener('click', () => openChecklist(area));
-    chip.appendChild(nameBtn);
-    if (pct !== null) {
-      const s = document.createElement('span');
-      s.className = 'score-mini';
-      s.style.color = scoreColor(pct); s.style.fontWeight = '700';
-      s.textContent = pct + '%';
-      chip.appendChild(s);
-    }
-    if (audit) {
-      const del = document.createElement('button');
-      del.className = 'chip-del'; del.title = 'Eliminar'; del.textContent = '✕';
-      del.addEventListener('click', async e => {
-        e.stopPropagation();
-        if (!confirm(`¿Eliminar auditoría de "${area}"?`)) return;
-        try { await deleteAuditById(audit.id); showToast(`Eliminado: ${area}`); }
-        catch(err) { showToast('❌ Error al eliminar'); }
-      });
-      chip.appendChild(del);
-    }
-    grid.appendChild(chip);
+  GRUPOS_AREAS.forEach(({ grupo, areas }) => {
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'grid-column:1/-1;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--primary);padding:8px 2px 4px;border-bottom:1.5px solid var(--border);margin-top:4px';
+    hdr.textContent = grupo;
+    grid.appendChild(hdr);
+    areas.forEach(area => {
+      const audit = auditsCache.find(a => a.area === area && a.week === currentWeek);
+      const pct = audit ? calcScore(audit.responses) : null;
+      if (audit) done++;
+      const chip = document.createElement('div');
+      chip.className = 'area-chip' + (audit ? ' done' : '');
+      const nameBtn = document.createElement('button');
+      nameBtn.style.cssText = 'flex:1;text-align:left;line-height:1.2;font-size:.74rem;background:none;border:none;color:inherit;cursor:pointer;padding:0;font-weight:600';
+      nameBtn.textContent = area;
+      nameBtn.addEventListener('click', () => openChecklist(area));
+      chip.appendChild(nameBtn);
+      if (pct !== null) {
+        const s = document.createElement('span');
+        s.className = 'score-mini';
+        s.style.color = scoreColor(pct); s.style.fontWeight = '700';
+        s.textContent = pct + '%';
+        chip.appendChild(s);
+      }
+      if (audit) {
+        const del = document.createElement('button');
+        del.className = 'chip-del'; del.title = 'Eliminar'; del.textContent = '✕';
+        del.addEventListener('click', async e => {
+          e.stopPropagation();
+          if (!confirm(`¿Eliminar auditoría de "${area}"?`)) return;
+          try { await deleteAuditById(audit.id); showToast(`Eliminado: ${area}`); }
+          catch(err) { showToast('❌ Error al eliminar'); }
+        });
+        chip.appendChild(del);
+      }
+      grid.appendChild(chip);
+    });
   });
   document.getElementById('done-count').textContent = done;
   document.getElementById('total-count').textContent = AREAS.length;
@@ -2106,54 +2120,48 @@ function renderPTAR() {
 function renderPTARBalance() {
   const anio = parseInt(document.getElementById('pt_dashAnio').value, 10);
   const mes  = document.getElementById('pt_dashMes').value;
-  const lookup = getPTARConsumoLookup();
 
   const getVal = (punto) => {
-    const v = lookup[`${punto}|${anio}|${mes}`];
-    return (v !== null && v !== undefined) ? v : null;
+    const rec = ptarCache.find(r => r.punto === punto && r.anio === anio && r.mes === mes);
+    return rec ? rec.lectura : null;
   };
 
-  const entrada1 = getVal('Lavamanos de encolaje');
-  const entrada2 = getVal('CK, PGS');
+  const entrada1   = getVal('Lavamanos de encolaje');
+  const entrada2   = getVal('CK, PGS');
   const descargada = getVal('Agua descargada');
-  const lodos = getVal('Descarga de lodos');
+  const lodos      = getVal('Descarga de lodos');
 
-  const totalEntrada = (entrada1 !== null || entrada2 !== null)
-    ? ((entrada1||0) + (entrada2||0)) : null;
-  const aguaLiberada = (descargada !== null && lodos !== null)
-    ? Math.max(0, descargada - lodos) : null;
-
-  const fmtVal = (v) => v !== null ? `<strong>${v.toFixed(2)} m³</strong>` : '<span style="color:var(--muted)">Sin dato</span>';
+  const fmtV = (v) => v !== null ? `<strong>${v.toFixed(2)} m³</strong>` : '<span style="color:var(--muted)">Sin dato</span>';
+  const fmtC = (v) => v !== null ? v.toFixed(2) + ' m³' : '—';
 
   document.getElementById('pt_balance').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
       <div class="tstat blue">
-        <div class="v" style="font-size:.85rem">${entrada1!==null?entrada1.toFixed(2)+' m³':'—'}</div>
+        <div class="v" style="font-size:.85rem">${fmtC(entrada1)}</div>
         <div class="k">Lavamanos de encolaje</div>
       </div>
       <div class="tstat blue">
-        <div class="v" style="font-size:.85rem">${entrada2!==null?entrada2.toFixed(2)+' m³':'—'}</div>
+        <div class="v" style="font-size:.85rem">${fmtC(entrada2)}</div>
         <div class="k">CK, PGS</div>
       </div>
       <div class="tstat blue">
-        <div class="v" style="font-size:.85rem">${descargada!==null?descargada.toFixed(2)+' m³':'—'}</div>
+        <div class="v" style="font-size:.85rem">${fmtC(descargada)}</div>
         <div class="k">Agua descargada</div>
       </div>
       <div class="tstat" style="background:var(--amber-tint);border:1px solid var(--amber-border)">
-        <div class="v" style="font-size:.85rem;color:var(--amber-deep)">${lodos!==null?lodos.toFixed(2)+' m³':'—'}</div>
+        <div class="v" style="font-size:.85rem;color:var(--amber-deep)">${fmtC(lodos)}</div>
         <div class="k">Descarga de lodos</div>
       </div>
     </div>
     <div style="background:var(--surface-2);border:1.5px solid var(--border);border-radius:10px;padding:14px">
-      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Balance · ${mes} ${anio}</div>
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Contraste de lecturas · ${mes} ${anio}</div>
       <div style="display:flex;flex-direction:column;gap:6px;font-size:.82rem">
-        <div style="display:flex;justify-content:space-between"><span>Total entrada (Lavamanos + CK,PGS)</span>${fmtVal(totalEntrada)}</div>
-        <div style="display:flex;justify-content:space-between"><span>Agua descargada</span>${fmtVal(descargada)}</div>
-        <div style="display:flex;justify-content:space-between"><span>Descarga de lodos (reintegrada)</span>${fmtVal(lodos)}</div>
-        <div style="border-top:1.5px solid var(--text);margin-top:4px;padding-top:8px;display:flex;justify-content:space-between;font-weight:700">
-          <span>Agua liberada = Descargada − Lodos</span>${fmtVal(aguaLiberada)}
-        </div>
+        <div style="display:flex;justify-content:space-between"><span>Agua tratada — Lavamanos de encolaje</span>${fmtV(entrada1)}</div>
+        <div style="display:flex;justify-content:space-between"><span>Agua tratada — CK, PGS</span>${fmtV(entrada2)}</div>
+        <div style="display:flex;justify-content:space-between"><span>Agua descargada</span>${fmtV(descargada)}</div>
+        <div style="display:flex;justify-content:space-between"><span>Descarga de lodos</span>${fmtV(lodos)}</div>
       </div>
+      <div style="font-size:.65rem;color:var(--muted);margin-top:10px;border-top:1px solid var(--border);padding-top:8px">ℹ️ Registros para revisión con el ingeniero · Sin cálculo automático por ahora</div>
     </div>`;
 }
 
