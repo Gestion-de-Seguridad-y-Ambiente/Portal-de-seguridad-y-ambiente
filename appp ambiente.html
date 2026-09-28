@@ -833,6 +833,7 @@ img{max-width:100%}
       <option value="">Todas las plantas</option>
       <option>Planta Quevedo — Administrativo</option>
       <option>Planta Quevedo — Operativo</option>
+      <option>PSD</option>
       <option>PGS</option>
       <option>Samborondón</option>
       <option>Cosecha</option>
@@ -880,6 +881,7 @@ img{max-width:100%}
       <option value="">Todas las plantas</option>
       <option>Planta Quevedo — Administrativo</option>
       <option>Planta Quevedo — Operativo</option>
+      <option>PSD</option>
       <option>PGS</option>
       <option>Samborondón</option>
       <option>Cosecha</option>
@@ -951,16 +953,24 @@ const ANIOS_AGUA  = [2024,2025,2026,2027,2028,2029,2030];
 const GRUPOS_AREAS = [
   { grupo: 'Planta Quevedo — Administrativo', areas: [
     'OFICINA DE E.S.','OFICINA IT','OFICINA PRODUCCIÓN','ADM',
-    'DISPENSARIO','PROYECTOS','CERTIFICACIONES','MTTO OFICINAS','COMPRAS'
+    'DISPENSARIO','PROYECTOS','CERTIFICACIONES','MTTO OFICINAS','COMPRAS',
+    'OFICINA MADERA VERDE','OFICINA DE SECADO','CALIDAD','TOLA','LABORATORIO',
+    'SILVICULTURA','VIVERO','GENÉTICA','CABAÑAS'
   ]},
   { grupo: 'Planta Quevedo — Operativo', areas: [
-    'OPERACIONES','CALIDAD','TOLA','CK-EMBARQUE','BODEGA','CALDERO',
-    'OFICINA MADERA VERDE','OFICINA DE SECADO','LABORATORIO',
-    'SILVICULTURA','GENÉTICA','VIVERO','CABAÑAS'
+    'TALLER','ENCOLAJE','D100','TALLER MTTO','PTAR',
+    'CK-EMBARQUE','BODEGA','CALDERO'
+  ]},
+  { grupo: 'PSD', areas: [
+    'TALLER PSD','MADERA VERDE PSD','CALDERO PSD','ENCOLAJE PSD',
+    'BODEGA PSD','OFICINA ADMINISTRATIVA PSD'
   ]},
   { grupo: 'PGS', areas: ['PGS 1','PGS 2','OFICINA DE PGS'] },
   { grupo: 'Samborondón', areas: ['SAMBORONDÓN'] },
-  { grupo: 'Cosecha', areas: ['COSECHA NORTE','COSECHA SUR','COSECHA CENTRO'] }
+  { grupo: 'Cosecha', areas: [
+    'COSECHA NORTE','COSECHA SUR','COSECHA CENTRO',
+    'PLANTACIONES NORTE','PLANTACIONES SUR','PLANTACIONES CENTRO'
+  ]}
 ];
 const AREAS = GRUPOS_AREAS.flatMap(g => g.areas);
 const ITEMS = [
