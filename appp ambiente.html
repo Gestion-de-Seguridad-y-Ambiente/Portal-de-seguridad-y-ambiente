@@ -2177,37 +2177,30 @@ function renderPTARBalance() {
   const indicador = (consumo && tratada !== null) ? tratada / consumo * 100 : null;
 
   const fmtV = (v) => v !== null ? `<strong>${v.toFixed(2)} m³</strong>` : '<span style="color:var(--muted)">Sin dato</span>';
-  const fmtC = (v) => v !== null ? v.toFixed(2) + ' m³' : '—';
+  const head = (t) => `<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px">${t}</div>`;
+  const row = (label, v) => `<div style="display:flex;justify-content:space-between"><span>${label}</span>${fmtV(v)}</div>`;
+  const total = (label, v) => `<div style="border-top:1px solid var(--border);margin-top:2px;padding-top:6px;display:flex;justify-content:space-between;font-weight:700"><span>${label}</span>${fmtV(v)}</div>`;
+  const box = 'background:var(--surface-2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;font-size:.82rem';
 
   document.getElementById('pt_balance').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="tstat blue">
-        <div class="v" style="font-size:.85rem">${fmtC(entrada1)}</div>
-        <div class="k">Lavamanos de encolaje</div>
-      </div>
-      <div class="tstat blue">
-        <div class="v" style="font-size:.85rem">${fmtC(entrada2)}</div>
-        <div class="k">CK, PGS</div>
-      </div>
-      <div class="tstat blue">
-        <div class="v" style="font-size:.85rem">${fmtC(descargada)}</div>
-        <div class="k">Agua descargada</div>
-      </div>
-      <div class="tstat" style="background:var(--amber-tint);border:1px solid var(--amber-border)">
-        <div class="v" style="font-size:.85rem;color:var(--amber-deep)">${fmtC(lodos)}</div>
-        <div class="k">Descarga de lodos</div>
-      </div>
+    <div style="${box}">
+      ${head('Datos de entrada · ' + mes + ' ' + anio)}
+      ${row('Lavamanos de encolaje', entrada1)}
+      ${row('CK, PGS', entrada2)}
+      ${total('Consumo', consumo)}
     </div>
-    <div style="background:var(--surface-2);border:1.5px solid var(--border);border-radius:10px;padding:14px">
-      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Balance PTAR · ${mes} ${anio}</div>
-      <div style="display:flex;flex-direction:column;gap:6px;font-size:.82rem">
-        <div style="display:flex;justify-content:space-between"><span>Consumo = CK, PGS + Lavamanos</span>${fmtV(consumo)}</div>
-        <div style="display:flex;justify-content:space-between"><span>Tratada = Descargada + Purga (lodos)</span>${fmtV(tratada)}</div>
-        <div style="border-top:1.5px solid var(--text);margin-top:4px;padding-top:8px;display:flex;justify-content:space-between;align-items:baseline;font-weight:700">
-          <span>Indicador = Tratada / Consumo × 100</span>
-          <span style="font-size:1.1rem;color:${indicador===null?'var(--muted)':'var(--blue-deep)'}">${indicador===null?'Sin dato':indicador.toFixed(2)+' %'}</span>
-        </div>
+    <div style="${box}">
+      ${head('Datos de salida · ' + mes + ' ' + anio)}
+      ${row('Agua descargada', descargada)}
+      ${row('Descarga de lodos (purga)', lodos)}
+      ${total('Tratada', tratada)}
+    </div>
+    <div style="background:var(--blue-tint);border:1.5px solid var(--blue-border);border-radius:10px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div>
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue-deep)">Indicador</div>
+        <div style="font-size:.72rem;color:var(--text-mid)">(Tratada / Consumo) × 100</div>
       </div>
+      <div style="font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;color:${indicador===null?'var(--muted)':'var(--blue-deep)'}">${indicador===null?'Sin dato':indicador.toFixed(2)+' %'}</div>
     </div>`;
 }
 
