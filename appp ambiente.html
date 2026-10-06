@@ -2172,6 +2172,10 @@ function renderPTARBalance() {
   const descargada = getVal('Agua descargada');
   const lodos      = getVal('Descarga de lodos');
 
+  const consumo = (entrada1 !== null || entrada2 !== null) ? (entrada1||0) + (entrada2||0) : null;
+  const tratada = (descargada !== null || lodos !== null) ? (descargada||0) + (lodos||0) : null;
+  const indicador = (consumo && tratada !== null) ? tratada / consumo * 100 : null;
+
   const fmtV = (v) => v !== null ? `<strong>${v.toFixed(2)} m³</strong>` : '<span style="color:var(--muted)">Sin dato</span>';
   const fmtC = (v) => v !== null ? v.toFixed(2) + ' m³' : '—';
 
@@ -2195,14 +2199,15 @@ function renderPTARBalance() {
       </div>
     </div>
     <div style="background:var(--surface-2);border:1.5px solid var(--border);border-radius:10px;padding:14px">
-      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Contraste de lecturas · ${mes} ${anio}</div>
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Balance PTAR · ${mes} ${anio}</div>
       <div style="display:flex;flex-direction:column;gap:6px;font-size:.82rem">
-        <div style="display:flex;justify-content:space-between"><span>Agua tratada — Lavamanos de encolaje</span>${fmtV(entrada1)}</div>
-        <div style="display:flex;justify-content:space-between"><span>Agua tratada — CK, PGS</span>${fmtV(entrada2)}</div>
-        <div style="display:flex;justify-content:space-between"><span>Agua descargada</span>${fmtV(descargada)}</div>
-        <div style="display:flex;justify-content:space-between"><span>Descarga de lodos</span>${fmtV(lodos)}</div>
+        <div style="display:flex;justify-content:space-between"><span>Consumo = CK, PGS + Lavamanos</span>${fmtV(consumo)}</div>
+        <div style="display:flex;justify-content:space-between"><span>Tratada = Descargada + Purga (lodos)</span>${fmtV(tratada)}</div>
+        <div style="border-top:1.5px solid var(--text);margin-top:4px;padding-top:8px;display:flex;justify-content:space-between;align-items:baseline;font-weight:700">
+          <span>Indicador = Tratada / Consumo × 100</span>
+          <span style="font-size:1.1rem;color:${indicador===null?'var(--muted)':'var(--blue-deep)'}">${indicador===null?'Sin dato':indicador.toFixed(2)+' %'}</span>
+        </div>
       </div>
-      <div style="font-size:.65rem;color:var(--muted);margin-top:10px;border-top:1px solid var(--border);padding-top:8px">ℹ️ Registros para revisión con el ingeniero · Sin cálculo automático por ahora</div>
     </div>`;
 }
 
