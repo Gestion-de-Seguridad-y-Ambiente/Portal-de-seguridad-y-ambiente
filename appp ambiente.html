@@ -811,13 +811,42 @@ img{max-width:100%}
         <div class="totals-strip" id="pt_totals"></div>
       </div>
       <div class="card">
-        <div class="card-title" style="margin-bottom:8px">📊 Balance mensual <span style="margin-left:auto;font-weight:600;color:var(--blue-deep);letter-spacing:0;text-transform:none">v6</span></div>
+        <div class="card-title" style="margin-bottom:8px">📊 Balance mensual <span style="margin-left:auto;font-weight:600;color:var(--blue-deep);letter-spacing:0;text-transform:none">v7</span></div>
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Selecciona año y mes para ver el balance</div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
           <select id="pt_dashAnio" onchange="renderPTARBalance()" style="font-size:.75rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);outline:none"></select>
           <select id="pt_dashMes" onchange="renderPTARBalance()" style="font-size:.75rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);outline:none"></select>
         </div>
         <div id="pt_balance"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <div>
+            <div class="card-title" style="margin-bottom:2px">Dashboard mensual</div>
+            <div style="font-size:.7rem;color:var(--muted)">Consumo m³ por mes</div>
+          </div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <select id="pt_dashPunto" onchange="renderPTARDashboard()" style="font-size:.75rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);outline:none">
+              <option value="">Entradas (consumo)</option>
+              <option>Lavamanos de encolaje</option>
+              <option>CK, PGS</option>
+              <option>Agua descargada</option>
+              <option>Descarga de lodos</option>
+            </select>
+            <select id="pt_dashChartAnio" onchange="renderPTARDashboard()" style="font-size:.75rem;padding:5px 8px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);outline:none"></select>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:monospace;font-weight:700;font-size:1.1rem;color:var(--blue-deep)" id="pt_dashTotal">0.0 m³</div>
+            <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Total del año</div>
+          </div>
+        </div>
+        <div class="chart-wrap" id="pt_chart"></div>
+        <div class="bar-labels" id="pt_chartLabels"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:8px">📈 Indicador por mes</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-bottom:10px">(Tratada / Consumo) × 100 · año seleccionado arriba</div>
+        <div class="bar-chart" id="pt_indChart"></div>
       </div>
     </div>
   </div>
@@ -1066,7 +1095,7 @@ function switchPage(id, btn, accent) {
   if (id === 'page-peligrosos')  renderPeligrosos();
   if (id === 'page-reciclaje')   renderReciclaje();
   if (id === 'page-captacion')   { renderCaptacion(); renderDashboard(); }
-  if (id === 'page-ptar')        { renderPTAR(); renderPTARBalance(); }
+  if (id === 'page-ptar')        { renderPTAR(); renderPTARBalance(); renderPTARDashboard(); }
 }
 
 // ══ AUTH ══
@@ -1931,6 +1960,7 @@ function populateCaptacionSelects() {
   document.getElementById('pt_fMes').innerHTML = '<option value="">Todos los meses</option>' + MESES.map(m => `<option>${m}</option>`).join('');
   document.getElementById('pt_dashAnio').innerHTML = ANIOS_AGUA.map(y => `<option ${y===nowYear?'selected':''}>${y}</option>`).join('');
   document.getElementById('pt_dashMes').innerHTML = MESES.map(m => `<option ${m===nowMes?'selected':''}>${m}</option>`).join('');
+  document.getElementById('pt_dashChartAnio').innerHTML = ANIOS_AGUA.map(y => `<option ${y===nowYear?'selected':''}>${y}</option>`).join('');
 }
 
 function startCaptacionSync() {
@@ -2069,7 +2099,7 @@ function startPTARSync() {
   ptUnsub = db.collection('ptar_lecturas').onSnapshot(snap => {
     ptarCache = snap.docs.map(d => d.data());
     if (document.getElementById('page-ptar').classList.contains('active')) {
-      renderPTAR(); renderPTARBalance();
+      renderPTAR(); renderPTARBalance(); renderPTARDashboard();
     }
   }, err => console.error(err));
 }
@@ -2162,9 +2192,10 @@ function renderPTARBalance() {
   const anio = parseInt(document.getElementById('pt_dashAnio').value, 10);
   const mes  = document.getElementById('pt_dashMes').value;
 
+  const lookup = getPTARConsumoLookup();
   const getVal = (punto) => {
-    const rec = ptarCache.find(r => r.punto === punto && r.anio === anio && r.mes === mes);
-    return rec ? rec.lectura : null;
+    const v = lookup[`${punto}|${anio}|${mes}`];
+    return (v === null || v === undefined) ? null : v;
   };
 
   const entrada1   = getVal('Lavamanos de encolaje');
@@ -2202,6 +2233,56 @@ function renderPTARBalance() {
       </div>
       <div style="font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;color:${indicador===null?'var(--muted)':'var(--blue-deep)'}">${indicador===null?'Sin dato':indicador.toFixed(2)+' %'}</div>
     </div>`;
+}
+
+function getPTARMes(lookup, anio, mes) {
+  const g = (p) => { const v = lookup[`${p}|${anio}|${mes}`]; return (v === null || v === undefined) ? null : v; };
+  const e1 = g('Lavamanos de encolaje'), e2 = g('CK, PGS');
+  const d = g('Agua descargada'), l = g('Descarga de lodos');
+  const consumo = (e1 !== null || e2 !== null) ? (e1||0) + (e2||0) : null;
+  const tratada = (d !== null || l !== null) ? (d||0) + (l||0) : null;
+  return { consumo, tratada, indicador: (consumo && tratada !== null) ? tratada / consumo * 100 : null };
+}
+
+function renderPTARDashboard() {
+  const anio   = parseInt(document.getElementById('pt_dashChartAnio').value, 10);
+  const puntoF = document.getElementById('pt_dashPunto').value;
+  const lookup = getPTARConsumoLookup();
+
+  const totales = MESES.map(mes => {
+    if (puntoF) {
+      const v = lookup[`${puntoF}|${anio}|${mes}`];
+      return (v && v > 0) ? v : 0;
+    }
+    const c = getPTARMes(lookup, anio, mes).consumo;
+    return (c && c > 0) ? c : 0;
+  });
+  const max = Math.max(...totales, 1);
+  document.getElementById('pt_chart').innerHTML = totales.map(v => `
+    <div class="bar-col">
+      <div class="bar-val">${v > 0 ? v.toFixed(1) : ''}</div>
+      <div class="bar" style="height:${v>0?Math.max((v/max*150),4):0}px"></div>
+    </div>
+  `).join('');
+  document.getElementById('pt_chartLabels').innerHTML = MESES.map(m => `<div class="bar-label-col">${m.slice(0,3)}</div>`).join('');
+  document.getElementById('pt_dashTotal').textContent = totales.reduce((s,v)=>s+v,0).toFixed(1) + ' m³';
+
+  const indChart = document.getElementById('pt_indChart');
+  const filas = MESES.map(mes => ({ mes, ind: getPTARMes(lookup, anio, mes).indicador }))
+                     .filter(f => f.ind !== null);
+  if (!filas.length) {
+    indChart.innerHTML = `<div class="empty-state">Sin datos suficientes para calcular el indicador.</div>`;
+    return;
+  }
+  indChart.innerHTML = filas.map(({ mes, ind }) => {
+    const pct = Math.round(ind);
+    const color = scoreColor(Math.min(pct, 100));
+    return `<div class="bar-row">
+      <div class="bar-name">${mes}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.min(pct,100)}%;background:${color}">${pct>=20?pct+'%':''}</div></div>
+      <div class="bar-pct" style="color:${color}">${ind.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
 }
 
 async function delPTAR(id) {
