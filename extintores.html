@@ -403,6 +403,9 @@ tbody tr:last-child td{border-bottom:none}
     <button class="sb-btn" onclick="showHistorial()">
       <span class="sb-ico2">📋</span> Historial
     </button>
+    <button class="sb-btn" onclick="showMensual()">
+      <span class="sb-ico2">📅</span> Matrices mensuales
+    </button>
     <button class="sb-btn" onclick="document.getElementById('imp-global').click()">
       <span class="sb-ico2">📂</span> Importar JSON
     </button>
@@ -487,7 +490,7 @@ tbody tr:last-child td{border-bottom:none}
     </div>
 
   </div><!-- /content -->
-  <footer class="app-footer">© 2026 PLANTABAL S.A. — Sistema de Gestión de Extintores · ED-CH-R2 · Todos los derechos reservados</footer>
+  <footer class="app-footer">© 2026 PLANTABAL S.A. — Sistema de Gestión de Extintores · GE-SO-R16 · Todos los derechos reservados</footer>
 </div><!-- /main -->
 </div><!-- /layout -->
 
@@ -551,7 +554,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="qr-fire">🔥</div>
     <div class="qr-hd-info">
       <h3 id="qr-title">Extintor —</h3>
-      <p>PLANTABAL S.A. · ED-CH-R2</p>
+      <p>PLANTABAL S.A. · GE-SO-R16</p>
     </div>
     <button class="qrclose" onclick="close_('m-qr')">×</button>
   </div>
@@ -643,6 +646,26 @@ function estado(r){
     return 'VIGENTE';
   }catch(e){return st;}
 }
+// Igual que estado(), pero contra una fecha de referencia arbitraria.
+// Se usa para congelar el estado de las matrices mensuales: una matriz de
+// octubre debe seguir diciendo lo mismo aunque se abra en diciembre.
+function estadoRef(r,ref){
+  if(!r)return'';
+  var st=r.estado||'';
+  if(['CADUCADO','USADOS','DAÑADO','EN RECARGA','REPOSICIÓN PENDIENTE','USADO'].indexOf(st)>=0) return st;
+  var pr=r.prox_recarga||'';
+  if(!pr)return st;
+  try{
+    if(/^\d{4}-\d{2}$/.test(pr)) pr=pr+'-01';
+    var d=new Date(pr+'T00:00:00'),t=new Date(ref);
+    if(isNaN(t.getTime()))t=new Date();
+    t.setHours(0,0,0,0);
+    var diff=(d-t)/86400000;
+    if(diff<0)return'VENCIDO';
+    if(diff<=30)return'POR VENCER';
+    return'VIGENTE';
+  }catch(e){return st;}
+}
 function daysTo(r){
   try{
     const d=new Date((r.prox_recarga||'')+'T00:00:00'),t=new Date();t.setHours(0,0,0,0);
@@ -682,6 +705,7 @@ function autoSave(){
   try{
     D._ts=Date.now();localStorage.setItem(KEY,JSON.stringify(D));try{if(window._fsdoc)window._fsdoc.set(D).catch(function(){});}catch(_e){}
     dirty=false;
+    tocarMes();
   }catch(e){
     toast('⚠ Error guardando — usa Exportar JSON','#dc2626');
     return;
@@ -697,6 +721,7 @@ function doSave(manual=true){
   try{
     D._ts=Date.now();localStorage.setItem(KEY,JSON.stringify(D));try{if(window._fsdoc)window._fsdoc.set(D).catch(function(){});}catch(_e){}
     dirty=false;
+    tocarMes();
     const now=new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     document.getElementById('save-dot').classList.remove('dirty');
     document.getElementById('save-txt').textContent='Guardado '+now;
@@ -707,12 +732,36 @@ function saveManual(){doSave(true);}
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 
 // ── EXPORT ────────────────────────────────────────────────────
+// Descarga un Blob con nombre de archivo fiable.
+// El enlace DEBE estar insertado en el documento antes de hacer click: si
+// está suelto, varios navegadores ignoran el atributo "download" (sobre todo
+// al abrir la página con doble clic, origen file://) y guardan el archivo
+// sin nombre ni extensión — queda "un archivo" que Excel no reconoce.
+function bajarArchivo(blob,nombre){
+  try{
+    if(window.navigator&&window.navigator.msSaveOrOpenBlob){   // Edge/IE antiguos
+      window.navigator.msSaveOrOpenBlob(blob,nombre);return;
+    }
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download=nombre;
+    a.rel='noopener';
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){
+      try{document.body.removeChild(a);}catch(_){}
+      URL.revokeObjectURL(url);
+    },1500);
+  }catch(e){
+    console.error(e);
+    toast('❌ No se pudo descargar: '+e.message,'#dc2626');
+  }
+}
 function exportJSON(){
   const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);
-  a.download='PLANTABAL_Extintores_'+new Date().toISOString().slice(0,10)+'.json';
-  a.click();
+  bajarArchivo(b,'PLANTABAL_Extintores_'+new Date().toISOString().slice(0,10)+'.json');
   toast('📁 JSON exportado','#0284c7');
 }
 function importJSON(inp){
@@ -730,14 +779,16 @@ function importJSON(inp){
 }
 function toggleImp(){const b=document.getElementById('imp-bar');b.style.display=b.style.display==='none'?'block':'none';}
 
-function exportXLSX(){
+// Sin argumentos exporta los datos vivos (comportamiento original).
+// Con (data, fechaISO, mes) exporta una matriz mensual congelada.
+function exportXLSX(src,refISO,label){
   toast('📊 Preparando Excel...','#0284c7');
   if(typeof ExcelJS !== 'undefined'){
-    _doExport();
+    _doExport(src,refISO,label);
   } else {
     var s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.bare.min.js';
-    s.onload=function(){ _doExport(); };
+    s.onload=function(){ _doExport(src,refISO,label); };
     s.onerror=function(){ toast('⚠ Sin internet — Excel no disponible offline','#dc2626'); };
     document.head.appendChild(s);
   }
@@ -757,7 +808,9 @@ function showDashboard(){
 function renderDashboard(){
   // Gather all stats
   const all=[];
-  Object.entries(D).forEach(([tab,recs])=>{if(!Array.isArray(recs))return;recs.forEach(r=>{all.push({...r,_tab:tab});});});
+  // Solo los módulos reales: D también guarda _historial (bitácora de
+  // movimientos), que no son extintores y no deben sumar en los KPIs.
+  Object.entries(D).forEach(([tab,recs])=>{if(!TABS[tab]||!Array.isArray(recs))return;recs.forEach(r=>{all.push({...r,_tab:tab});});});
 
   const vig=all.filter(r=>estado(r)==='VIGENTE').length;
   const ven=all.filter(r=>['VENCIDO','NO VIGENTE'].includes(estado(r))).length;
@@ -1175,9 +1228,14 @@ function genFallback(r){
 }
 function dlQR(){
   const img=document.getElementById('qr-img');const r=curQR.r;
-  const a=document.createElement('a');a.href=img.src;
-  a.download=`QR_${(r.num||'ext').replace(/\s/g,'_')}_${(r.area||'').replace(/\s/g,'_')}.png`;
+  const nombre=`QR_${(r.num||'ext').replace(/\s/g,'_')}_${(r.area||'').replace(/\s/g,'_')}.png`;
+  const a=document.createElement('a');
+  a.href=img.src;
+  a.download=nombre;
+  a.style.display='none';
+  document.body.appendChild(a);
   a.click();
+  setTimeout(function(){try{document.body.removeChild(a);}catch(_){}},1500);
 }
 function printCedula(){
   const img=document.getElementById('qr-img');const r=curQR.r;
@@ -1199,7 +1257,7 @@ function printCedula(){
   .ft{padding:6px 14px;font-size:9px;color:#64748b;border-top:1px solid #e2e8f0;background:#f8fafc;text-align:center}
   @media print{button{display:none}body{padding:2mm}}</style></head>
   <body><div class="c">
-  <div class="h"><h1>🔥 Extintor N° ${r.num||'—'}<small>PLANTABAL S.A. · ED-CH-R2</small></h1></div>
+  <div class="h"><h1>🔥 Extintor N° ${r.num||'—'}<small>PLANTABAL S.A. · GE-SO-R16</small></h1></div>
   <div class="b"><div><img src="${img.src}" width="110" height="110" style="border:1.5px solid #e2e8f0;border-radius:6px;image-rendering:pixelated;display:block">${foto}</div>
   <table style="flex:1;width:100%">${rows}</table></div>
   <div class="ft">Escanear QR · ${new Date().toLocaleDateString('es-EC')}</div>
@@ -1383,6 +1441,12 @@ var movTab=null, movExtIdx=null, movBodegaIdx=null;
 const savedExists=!!localStorage.getItem(KEY);
 document.getElementById('save-txt').textContent=savedExists?'Datos locales cargados':'Datos originales';
 showDashboard();
+
+// Matrices mensuales: traer las de Firestore y, si el mes en curso aún no
+// tiene copia, crearla. Se espera a que baje la sincronización de D para no
+// congelar un mes con datos locales desactualizados.
+_fsMesInit();
+setTimeout(function(){ if(!M[mesActual()]) guardarMes(mesActual(),true); },12000);
 
 function handleMov(btn){
   try{
@@ -1840,11 +1904,139 @@ function confirmarRecepcionRecarga(){
 }
 
 
-function _doExport(){
+// ═══════════════════════════════════════════════════════════════
+// MATRICES MENSUALES — una copia congelada de la matriz por cada mes
+// Se guarda aparte de D (clave propia en localStorage y colección propia
+// en Firestore) porque un documento de Firestore no puede pasar de 1 MiB
+// y D ya carga las fotos de los extintores.
+// ═══════════════════════════════════════════════════════════════
+var MKEY='plantabal_mensual_v1';
+var MTABS=['pq','forestal','pgs','sd','gabinetes','gab_sd','stock','bodega'];
+var M=(function(){try{var s=localStorage.getItem(MKEY);if(s)return JSON.parse(s)||{};}catch(e){}return{};})();
+var _mesTimer=null;
+
+function mesActual(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function mesLabel(m){
+  var N=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var p=String(m||'').split('-');var i=parseInt(p[1],10)-1;
+  return (N[i]||p[1]||'?')+' '+(p[0]||'');
+}
+// Copia de los 8 módulos sin las fotos: el Excel no las usa y abultan el doc.
+function snapData(){
+  var o={};
+  MTABS.forEach(function(k){
+    o[k]=(Array.isArray(D[k])?D[k]:[]).map(function(r){
+      var c={};
+      for(var p in r){ if(p!=='foto'&&Object.prototype.hasOwnProperty.call(r,p)) c[p]=r[p]; }
+      return c;
+    });
+  });
+  return o;
+}
+function statsOf(data,ref){
+  var t=0,v=0,x=0,pv=0;
+  MTABS.forEach(function(k){
+    (data[k]||[]).forEach(function(r){
+      t++;var e=estadoRef(r,ref);
+      if(e==='VIGENTE')v++;
+      else if(e==='VENCIDO'||e==='NO VIGENTE')x++;
+      else if(e==='POR VENCER')pv++;
+    });
+  });
+  return{total:t,vigentes:v,vencidos:x,porVencer:pv};
+}
+function _saveM(){
+  try{localStorage.setItem(MKEY,JSON.stringify(M));}
+  catch(e){toast('⚠ Sin espacio para guardar la matriz mensual — borra meses antiguos','#dc2626');}
+}
+function guardarMes(mes,silent){
+  mes=mes||mesActual();
+  var fecha=new Date().toISOString();
+  var data=snapData();
+  M[mes]={mes:mes,fecha:fecha,data:data,stats:statsOf(data,fecha)};
+  _saveM();
+  try{ if(window._fsdb) window._fsdb.collection('extintores_mensual').doc(mes).set(M[mes]).catch(function(){}); }catch(e){}
+  if(!silent) toast('📅 Matriz de '+mesLabel(mes)+' guardada','#059669');
+}
+// Mantiene al día la matriz del mes en curso sin escribir en cada tecla.
+function tocarMes(){
+  clearTimeout(_mesTimer);
+  _mesTimer=setTimeout(function(){guardarMes(mesActual(),true);},8000);
+}
+function _fsMesInit(){
   try{
+    if(!window._fsdb)return;
+    window._fsdb.collection('extintores_mensual').get().then(function(qs){
+      var changed=false;
+      qs.forEach(function(doc){
+        var d=doc.data();
+        if(!d||!d.data)return;
+        var loc=M[doc.id];
+        if(!loc||(d.fecha||'')>(loc.fecha||'')){M[doc.id]=d;changed=true;}
+      });
+      if(changed)_saveM();
+    }).catch(function(){});
+  }catch(e){}
+}
+function showMensual(){
+  var meses=Object.keys(M).sort().reverse();
+  var act=mesActual();
+  var h='<div style="padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
+    '<div style="flex:1;min-width:190px;font-size:12px;color:var(--ink3)">Cada mes queda una copia congelada de la matriz. La del mes en curso se actualiza sola al guardar.</div>'+
+    '<button class="top-btn top-btn-pri" onclick="guardarMes(null,false);showMensual()">📅 Actualizar '+mesLabel(act)+'</button></div>';
+  if(!meses.length){
+    h+='<div style="padding:30px;text-align:center;color:var(--ink4)">Aún no hay matrices mensuales guardadas</div>';
+  }else{
+    h+=meses.map(function(m){
+      var s=M[m].stats||{};
+      var f=new Date(M[m].fecha);
+      var fs=isNaN(f.getTime())?'—':f.toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric'});
+      return '<div style="padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;flex-wrap:wrap">'+
+        '<div style="flex:1;min-width:175px">'+
+          '<div style="font-weight:700;font-size:13px;color:var(--ink)">'+mesLabel(m)+
+            (m===act?' <span style="font-size:9.5px;font-weight:700;color:var(--emerald);background:var(--emerald-lt);padding:1px 7px;border-radius:9px;margin-left:4px">EN CURSO</span>':'')+'</div>'+
+          '<div style="font-size:11px;color:var(--ink3);margin-top:2px">Actualizada '+fs+' · '+(s.total||0)+' registros</div>'+
+          '<div style="font-size:11px;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">'+
+            '<span style="color:var(--emerald);font-weight:600">'+(s.vigentes||0)+' vigentes</span>'+
+            '<span style="color:var(--amber);font-weight:600">'+(s.porVencer||0)+' por vencer</span>'+
+            '<span style="color:var(--fire);font-weight:600">'+(s.vencidos||0)+' vencidos</span>'+
+          '</div></div>'+
+        '<div style="display:flex;gap:6px;white-space:nowrap">'+
+          '<button class="top-btn top-btn-pri" onclick="exportMes(\''+m+'\')">⬇ Excel</button>'+
+          '<button class="ab ad" onclick="delMes(\''+m+'\')" title="Eliminar">🗑</button>'+
+        '</div></div>';
+    }).join('');
+  }
+  document.getElementById('mensual-body').innerHTML=h;
+  document.getElementById('m-mensual').classList.add('on');
+}
+function exportMes(m){
+  var s=M[m];
+  if(!s||!s.data){toast('⚠ No hay datos guardados para '+mesLabel(m),'#dc2626');return;}
+  exportXLSX(s.data,s.fecha,m);
+}
+function delMes(m){
+  if(!confirm('¿Eliminar la matriz de '+mesLabel(m)+'?\n\nEsta acción no se puede deshacer.'))return;
+  delete M[m];
+  _saveM();
+  try{ if(window._fsdb) window._fsdb.collection('extintores_mensual').doc(m).delete().catch(function(){}); }catch(e){}
+  showMensual();
+  toast('🗑 Matriz de '+mesLabel(m)+' eliminada','#64748b');
+}
+
+// src    → conjunto de datos a exportar (por defecto D = datos vivos)
+// refISO → fecha de referencia ISO. Si viene, la matriz se "congela": el ESTADO
+//          se calcula contra esa fecha y se escribe como texto fijo, en vez de
+//          la fórmula TODAY() que se recalcularía al abrir el archivo meses después.
+// label  → sufijo del nombre de archivo (ej. '2026-10')
+function _doExport(src, refISO, label){
+  try{
+    src = src || D;
+    var frozen = !!refISO;
     var wb=new ExcelJS.Workbook();
     wb.created=new Date();wb.modified=new Date();
-    var today=new Date();
+    var today = frozen ? new Date(refISO) : new Date();
+    if(isNaN(today.getTime())){ today = new Date(); frozen = false; }
     var todayStr=String(today.getMonth()+1).padStart(2,'0')+'/'+today.getFullYear();
     var excelToday=Math.floor((today-new Date(1899,11,30))/86400000);
     var excel30=excelToday+30;
@@ -1872,7 +2064,10 @@ function _doExport(){
       ws.addConditionalFormatting({ref:col+r1+':'+col+r2,rules:[{type:'cellIs',operator:'lessThan',formulae:[String(excelToday)],priority:1,style:{font:{bold:true,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFF0000'},bgColor:{argb:'FFFF0000'}}}}]});
       ws.addConditionalFormatting({ref:col+r1+':'+col+r2,rules:[{type:'cellIs',operator:'between',formulae:[String(excelToday),String(excel30)],priority:2,style:{font:{bold:true,color:{argb:'FF7D4E00'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFFEB9C'},bgColor:{argb:'FFFFEB9C'}}}}]});
       ws.addConditionalFormatting({ref:col+r1+':'+col+r2,rules:[{type:'cellIs',operator:'greaterThan',formulae:[String(excel30)],priority:3,style:{font:{bold:false,color:{argb:'FF274E13'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFB3E5A1'},bgColor:{argb:'FFB3E5A1'}}}}]});}
-    function estF(dc,row){return{formula:'IF('+dc+row+'="","",IF('+dc+row+'<TODAY(),"VENCIDO",IF('+dc+row+'<=TODAY()+30,"POR VENCER","VIGENTE")))'};} 
+    function estF(dc,row,rec){
+      // Matriz histórica → estado fijo calculado a la fecha del cierre de mes.
+      if(frozen) return estadoRef(rec,today);
+      return{formula:'IF('+dc+row+'="","",IF('+dc+row+'<TODAY(),"VENCIDO",IF('+dc+row+'<=TODAY()+30,"POR VENCER","VIGENTE")))'};}
     function makeExtSheet(wb,name,data){
       var ws=wb.addWorksheet(name,{properties:{tabColor:{argb:'FFFF0000'}}});
       ws.properties.defaultRowHeight=18;
@@ -1880,7 +2075,7 @@ function _doExport(){
       ws.getRow(1).height=35;ws.getRow(2).height=34;
       ws.mergeCells('A1:D2');ws.mergeCells('E1:P2');
       ap(ws.getCell('E1'),'MATRIZ DE CONTROL DE EXTINTORES',{bold:true,sz:15,ha:'center',brd:false});
-      ws.mergeCells('Q1:R1');ap(ws.getCell('Q1'),'ED-CH-R2',{bold:true,sz:16,ha:'center',brd:false});
+      ws.mergeCells('Q1:R1');ap(ws.getCell('Q1'),'GE-SO-R16',{bold:true,sz:16,ha:'center',brd:false});
       ws.mergeCells('Q2:R2');ap(ws.getCell('Q2'),'Versión: 02',{bold:true,sz:16,ha:'center',brd:false});
       ws.getRow(3).height=18;
       ws.mergeCells('A3:D3');ap(ws.getCell('A3'),'EMPRESA',{bold:true,sz:16,bg:BLU,ha:'center'});
@@ -1907,7 +2102,7 @@ function _doExport(){
         ['sen','pre','man','prc','seg','eti'].forEach(function(k,ci){ap(ws.getCell(row,11+ci),r[k]==='✓'?'√':'',{bold:true,sz:11,bg:bg,ha:'center'});});
         var obsVal=(r.obs&&!r.obs.startsWith('[')&&!r.obs.startsWith('Reemplazado'))?r.obs:'';
         ap(ws.getCell(row,17),obsVal,{sz:11,bg:bg,ha:'left',wrap:true});
-        var c18=ws.getCell(row,18);c18.value=estF('J',row);ap(c18,null,{sz:11,bg:WHT,ha:'center',bold:true});
+        var c18=ws.getCell(row,18);c18.value=estF('J',row,r);ap(c18,null,{sz:11,bg:WHT,ha:'center',bold:true});
       });
       addEstCF(ws,'R',ds,ds+data.length-1);addFechaCF(ws,'J',ds,ds+data.length-1);
       ws.views=[{state:'frozen',ySplit:5,activeCell:'A6'}];}
@@ -1918,7 +2113,7 @@ function _doExport(){
       ws.columns=[{width:6.7},{width:22.3},{width:50.7},{width:7.5},{width:9},{width:8.5},{width:13},{width:13},{width:5.1},{width:5.1},{width:6.5},{width:5.1},{width:5.1},{width:5.1},{width:49.7},{width:16.9}];
       ws.getRow(1).height=15;ws.getRow(2).height=41;ws.getRow(3).height=22;
       ws.mergeCells('A1:C2');ws.mergeCells('D1:O2');ap(ws.getCell('D1'),'MATRIZ DE CONTROL DE EXTINTORES',{bold:true,sz:15,ha:'center',brd:false});
-      ws.mergeCells('P1:Q1');ap(ws.getCell('P1'),'ED-CH-R2',{bold:true,sz:16,brd:false});ws.mergeCells('P2:Q2');ap(ws.getCell('P2'),'Versión: 02',{bold:true,sz:16,brd:false});
+      ws.mergeCells('P1:Q1');ap(ws.getCell('P1'),'GE-SO-R16',{bold:true,sz:16,brd:false});ws.mergeCells('P2:Q2');ap(ws.getCell('P2'),'Versión: 02',{bold:true,sz:16,brd:false});
       ws.mergeCells('A3:C3');ap(ws.getCell('A3'),'EMPRESA',{bold:true,sz:16,bg:BLU});ws.mergeCells('D3:I3');ap(ws.getCell('D3'),'PLANTABAL S.A',{bold:true,sz:16,ha:'left'});
       ws.mergeCells('J3:O3');ap(ws.getCell('J3'),'ULTIMA ACTUALIZACIÓN:',{bold:true,sz:14,bg:BLU});ws.mergeCells('P3:Q3');ap(ws.getCell('P3'),todayStr,{bold:true,sz:14});
       ws.getRow(4).height=8;ws.getRow(5).height=99;
@@ -1936,7 +2131,7 @@ function _doExport(){
         ['sen','pre','man','prc','seg','eti'].forEach(function(k,ci){ap(ws.getCell(row,9+ci),r[k]==='✓'?'√':'',{bold:true,sz:11,bg:bg,ha:'center'});});
         var obsVal=(r.obs&&!r.obs.startsWith('[')&&!r.obs.startsWith('Reemplazado'))?r.obs:'';
         ap(ws.getCell(row,15),obsVal,{sz:11,bg:bg,ha:'left',wrap:true});
-        var c16=ws.getCell(row,16);c16.value=estF('H',row);ap(c16,null,{sz:11,bg:WHT,ha:'center',bold:true});
+        var c16=ws.getCell(row,16);c16.value=estF('H',row,r);ap(c16,null,{sz:11,bg:WHT,ha:'center',bold:true});
       });
       addEstCF(ws,'P',ds,ds+data.length-1);addFechaCF(ws,'H',ds,ds+data.length-1);
       ws.views=[{state:'frozen',ySplit:5,activeCell:'A6'}];}
@@ -1945,7 +2140,7 @@ function _doExport(){
       ws.columns=[{width:4.1},{width:10.5},{width:6},{width:14.5},{width:19.7},{width:19.1},{width:20.5},{width:23.3},{width:46.6},{width:38.3}];
       ws.getRow(1).height=14;ws.getRow(2).height=25;ws.getRow(3).height=21;
       ws.mergeCells('A1:C2');ws.mergeCells('D1:P2');ap(ws.getCell('D1'),'INVENTARIO DE EXTINTORES',{bold:true,sz:18,ha:'center',brd:false});
-      ws.mergeCells('Q1:R1');ap(ws.getCell('Q1'),'ED-CH-R2',{bold:true,sz:12,brd:false});ws.mergeCells('Q2:R2');ap(ws.getCell('Q2'),'Versión: 02',{bold:true,sz:12,brd:false});
+      ws.mergeCells('Q1:R1');ap(ws.getCell('Q1'),'GE-SO-R16',{bold:true,sz:12,brd:false});ws.mergeCells('Q2:R2');ap(ws.getCell('Q2'),'Versión: 02',{bold:true,sz:12,brd:false});
       ws.mergeCells('A3:C3');ap(ws.getCell('A3'),'EMPRESA',{bold:true,sz:12,bg:BLU});ws.mergeCells('D3:J3');ap(ws.getCell('D3'),'PLANTABAL S.A',{bold:true,sz:12,ha:'left'});
       ws.mergeCells('K3:P3');ap(ws.getCell('K3'),'ULTIMA ACTUALIZACIÓN:',{bold:true,sz:12,bg:BLU});ws.mergeCells('Q3:R3');ap(ws.getCell('Q3'),todayStr,{bold:true,sz:12});
       ws.getRow(4).height=14;ws.getRow(5).height=27;
@@ -1985,20 +2180,22 @@ function _doExport(){
         ap(ws.getCell(row,10),r.obs||'',{sz:10,bg:bg,ha:'left',wrap:true});
       });
       addEstCF(ws,'F',ds,ds+data.length-1);ws.views=[{state:'frozen',ySplit:4,activeCell:'D5'}];}
-    makeExtSheet(wb,'EXTINTORES PQ',D.pq||[]);
-    makeExtSheet(wb,'EXTINTORES FORESTAL',D.forestal||[]);
-    makeExtSheet(wb,'EXTINTORES PGS',D.pgs||[]);
-    makeExtSheet(wb,'EXTINTORES P. SANTO DOMINGO',D.sd||[]);
-    makeGabSheet(wb,D.gabinetes||[],'GABINETES PQ');
-    makeGabSheet(wb,D.gab_sd||[],'GABINETES SD');
-    makeStockSheet(wb,D.stock||[]);
-    makeBodSheet(wb,D.bodega||[]);
+    makeExtSheet(wb,'EXTINTORES PQ',src.pq||[]);
+    makeExtSheet(wb,'EXTINTORES FORESTAL',src.forestal||[]);
+    makeExtSheet(wb,'EXTINTORES PGS',src.pgs||[]);
+    makeExtSheet(wb,'EXTINTORES P. SANTO DOMINGO',src.sd||[]);
+    makeGabSheet(wb,src.gabinetes||[],'GABINETES PQ');
+    makeGabSheet(wb,src.gab_sd||[],'GABINETES SD');
+    makeStockSheet(wb,src.stock||[]);
+    makeBodSheet(wb,src.bodega||[]);
     wb.xlsx.writeBuffer().then(function(buf){
       var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-      var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-      a.download='PLANTABAL_Extintores_'+new Date().toISOString().slice(0,10)+'.xlsx';
-      a.click();
-      setTimeout(function(){toast('✅ Excel generado con datos actuales','#059669');},500);
+      bajarArchivo(blob,'PLANTABAL_Extintores_'+(label||new Date().toISOString().slice(0,10))+'.xlsx');
+      setTimeout(function(){
+        toast(frozen?('✅ Matriz de '+(label||'')+' descargada'):'✅ Excel generado con datos actuales','#059669');
+      },500);
+    }).catch(function(err){
+      console.error(err);toast('❌ Error generando el Excel: '+err.message,'#dc2626');
     });
   }catch(err){console.error(err);toast('❌ Error: '+err.message,'#dc2626');}
 }
@@ -2120,6 +2317,21 @@ function confirmarAddBodega(){
     <button class="mclose" onclick="close_('m-historial')">×</button>
   </div>
   <div class="modal-body" id="historial-body" style="padding:0"></div>
+</div>
+</div>
+
+<!-- MATRICES MENSUALES MODAL -->
+<div class="mbg" id="m-mensual">
+<div class="fmodal" style="max-width:620px">
+  <div class="fmod-hd">
+    <span style="font-size:20px">📅</span>
+    <h2>Matrices Mensuales</h2>
+    <button class="mclose" onclick="close_('m-mensual')">×</button>
+  </div>
+  <div class="fmod-body" id="mensual-body" style="padding:0"></div>
+  <div class="fmod-ft">
+    <button class="top-btn top-btn-sec" onclick="close_('m-mensual')">Cerrar</button>
+  </div>
 </div>
 </div>
 
