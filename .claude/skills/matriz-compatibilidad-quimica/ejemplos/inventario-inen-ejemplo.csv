@@ -1,0 +1,5 @@
+codigo,producto,onu,clase_onu,riesgo_sec,subgrupo,concentracion,ubicacion,incompat_sds,observaciones
+Q-001,Etanol,1170,3,,inflamable;combustible;reductor,96%,POR CONFIRMAR,"Oxidantes fuertes, acidos fuertes","Seccion 4: Clase 3 Liquidos inflamables"
+Q-002,Pentanol (alcoholes amilicos),1105,3,,inflamable;combustible;reductor,99%,POR CONFIRMAR,"Oxidantes fuertes, acidos fuertes","Anexo L: Pentanoles / Alcoholes amilicos UN 1105"
+Q-003,Xileno,1307,3,,inflamable;combustible;reductor,99%,POR CONFIRMAR,"Oxidantes fuertes, acido nitrico, acido sulfurico","Anexo L: Xilenos UN 1307"
+Q-004,Acido nitrico 65%,2031,8,,acido;comburente,65%,POR CONFIRMAR,"Alcoholes, solventes organicos, bases, metales, materiales combustibles, agentes reductores","Anexo L: Acido nitrico que no sea fumante rojo UN 2031"

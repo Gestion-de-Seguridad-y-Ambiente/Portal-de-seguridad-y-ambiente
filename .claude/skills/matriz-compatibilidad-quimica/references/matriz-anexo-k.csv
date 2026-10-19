@@ -1,0 +1,15 @@
+clase,1,2.1,2.2,2.3,3,4.1,4.2,4.3,5.1,5.2,6,7,8,9
+1,A,A,A,A,A,A,A,A,A,A,A,A,A,A
+2.1,A,V,V,A,V,V,V,V,V,V,R,R,V,A
+2.2,A,V,V,V,V,V,V,V,V,V,V,V,V,A
+2.3,A,A,V,V,R,R,R,R,R,R,V,V,R,A
+3,A,V,V,R,V,V,V,V,R,V,A,V,V,A
+4.1,A,V,V,R,V,V,V,V,R,V,A,V,R,A
+4.2,A,V,V,R,V,V,V,V,R,V,A,V,R,A
+4.3,A,V,V,R,V,V,V,V,R,V,A,V,R,A
+5.1,A,V,V,R,R,R,R,R,V,V,A,V,R,A
+5.2,A,V,V,R,V,V,V,V,V,V,A,V,R,A
+6,A,R,V,V,A,A,A,A,A,A,V,V,A,A
+7,A,R,V,V,V,V,V,V,V,V,V,V,V,A
+8,A,V,V,R,V,R,R,R,R,R,A,V,A,A
+9,A,A,A,A,A,A,A,A,A,A,A,A,A,A

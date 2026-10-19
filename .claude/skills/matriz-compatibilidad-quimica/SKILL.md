@@ -1,6 +1,6 @@
 ---
 name: matriz-compatibilidad-quimica
-description: Construye matrices de compatibilidad para almacenamiento de productos quimicos a partir de las SDS (Hojas de Datos de Seguridad). Usala cuando el usuario adjunte SDS/FDS/MSDS, pida una matriz de compatibilidad o incompatibilidad quimica, quiera revisar la segregacion de una bodega de quimicos, o pregunte si dos productos pueden almacenarse juntos. Clasifica cada producto en grupos de almacenamiento usando el GHS/SGA, aplica la matriz base de segregacion y la Seccion 10.5 de cada SDS, y emite la matriz en HTML con los hallazgos de la bodega.
+description: Construye matrices de compatibilidad para almacenamiento de productos quimicos a partir de las SDS (Hojas de Datos de Seguridad). Usala cuando el usuario adjunte SDS/FDS/MSDS, pida una matriz de compatibilidad o incompatibilidad quimica, mencione la NTE INEN 2266 o su Anexo K, quiera revisar la segregacion de una bodega de quimicos, o pregunte si dos productos pueden almacenarse juntos. Tiene dos modos: normativo ecuatoriano (clases ONU, Anexo K y clausula 6.1.7.10 b de la INEN 2266) y tecnico (15 grupos de almacenamiento derivados del GHS/SGA). Ambos aplican la Seccion 10.5 de cada SDS por encima de la matriz y emiten el resultado en HTML con los hallazgos de la bodega.
 ---
 
 # Matriz de compatibilidad quimica
@@ -16,6 +16,18 @@ Por eso el GHS entra como **capa de entrada** (clasificar en grupos) y la segreg
 sale de la matriz base + la Seccion 10.5 de cada SDS. Si el usuario pide una matriz
 "segun el GHS", explicale esto una vez, con un ejemplo de su propio inventario, y
 sigue adelante con el metodo correcto. No construyas una matriz solo con clases GHS.
+
+## Elegir el modo antes de empezar
+
+| Modo | Cuando | Entrada | Script |
+|------|--------|---------|--------|
+| **Normativo (INEN)** | El entregable es auditable en Ecuador, o el usuario cita la INEN 2266 | Clase ONU (Seccion 4) + subgrupo | `generar_matriz_inen.py` |
+| **Tecnico (GHS)** | Analisis interno con mas resolucion que la clase ONU | Grupo G1-G15 desde la clasificacion GHS | `generar_matriz.py` |
+
+Si el entregable va a auditoria, usa el modo normativo: cita clausulas. El modo tecnico
+discrimina mejor (separa acidos oxidantes de no oxidantes, por ejemplo) pero no cita norma.
+Cuando haya duda, corre los dos y contrasta: si el modo tecnico es mas duro que el
+normativo, gana el tecnico y se documenta el criterio.
 
 ## Flujo de trabajo
 
@@ -57,6 +69,15 @@ y la ubicacion exacta para las S.
 
 ### 5. Generar la matriz
 
+Modo normativo (NTE INEN 2266:2013):
+
+```bash
+python3 scripts/generar_matriz_inen.py inventario.csv matriz-compatibilidad.html \
+    --empresa "Plantabal S.A."
+```
+
+Modo tecnico (grupos GHS):
+
 ```bash
 python3 scripts/generar_matriz.py inventario.csv matriz-compatibilidad.html \
     --empresa "Plantabal S.A."
@@ -82,6 +103,24 @@ En la respuesta al usuario, siempre:
 
 Publica el HTML como artefacto cuando el usuario lo vaya a compartir o imprimir.
 
+## Trampas de la INEN 2266 (leer antes de citarla)
+
+Detalle completo en `references/inen-2266.md`. Lo que mas se equivoca:
+
+- **La norma no tiene Seccion 10.** Llega hasta la Seccion 6. La clausula de
+  almacenamiento es **6.1.7.10**; la de apilamiento, **6.1.7.5**. La "seccion 10"
+  numerada en el documento es del formato MSDS del Anexo B.
+- **El Anexo K no basta por si solo.** Opera por clase ONU, que es demasiado grueso:
+  acidos y bases son ambos Clase 8 y su celda es **amarilla**, pero la clausula
+  **6.1.7.10 b.7** los prohibe expresamente. La clausula manda sobre la matriz.
+- **Clase 3 x Clase 8 es verde en el Anexo K.** Si el corrosivo es ademas comburente
+  (acido nitrico, sulfurico concentrado, perclorico), **b.2, b.4 y b.8** lo vuelven
+  rojo. El script lo hace via la columna `subgrupo` y marca la celda con una daga.
+- **El Anexo K impreso tiene un defecto**: la celda 4.2 x 8 es asimetrica. Se adopta
+  el valor mas restrictivo y se documenta.
+- **Declarar el riesgo secundario** en `riesgo_sec` cuando exista: el script evalua
+  tambien esa fila del Anexo K y se queda con el peor resultado.
+
 ## Lo que esta habilidad no hace
 
 - **No reemplaza al responsable de seguridad.** La matriz es una herramienta de
@@ -95,6 +134,11 @@ Publica el HTML como artefacto cuando el usuario lo vaya a compartir o imprimir.
 
 ## Archivos
 
+- `references/inen-2266.md` - transcripcion de la Seccion 4, el Anexo K y las
+  clausulas 6.1.7.5 y 6.1.7.10 b), con las trampas de citacion.
+- `references/matriz-anexo-k.csv` - el Anexo K transcrito (14x14, codigos V / A / R).
+- `scripts/reglas_inen.py` - las prohibiciones expresas de 6.1.7.10 b) como reglas.
+- `scripts/generar_matriz_inen.py` - generador del modo normativo.
 - `references/grupos-almacenamiento.md` - los 15 grupos, mapeo GHS y reglas de desempate.
 - `references/matriz-base.csv` - matriz 15x15 con codigos C / S / X.
 - `references/criterios-matriz.md` - que exige cada codigo en bodega, justificacion
