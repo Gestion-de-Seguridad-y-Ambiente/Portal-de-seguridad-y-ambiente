@@ -120,6 +120,11 @@ Detalle completo en `references/inen-2266.md`. Lo que mas se equivoca:
   el valor mas restrictivo y se documenta.
 - **Declarar el riesgo secundario** en `riesgo_sec` cuando exista: el script evalua
   tambien esa fila del Anexo K y se queda con el peor resultado.
+- **La mayoria del quimico de planta no tiene clase ONU.** Si la Seccion 14 de la SDS
+  dice "EL PRODUCTO NO ESTA REGULADO DURANTE SU TRANSPORTE", el producto queda fuera del
+  alcance del Anexo K. Registrarlo como `clase_onu = NR`: el script marca esas celdas
+  como `s/d`, las resuelve solo con la Seccion 10.5 y las clausulas, y lo reporta como
+  vacio de informacion. No inventar una clase ONU para rellenar la matriz.
 
 ## Lo que esta habilidad no hace
 
@@ -137,8 +142,14 @@ Detalle completo en `references/inen-2266.md`. Lo que mas se equivoca:
 - `references/inen-2266.md` - transcripcion de la Seccion 4, el Anexo K y las
   clausulas 6.1.7.5 y 6.1.7.10 b), con las trampas de citacion.
 - `references/matriz-anexo-k.csv` - el Anexo K transcrito (14x14, codigos V / A / R).
-- `scripts/reglas_inen.py` - las prohibiciones expresas de 6.1.7.10 b) como reglas.
+- `scripts/reglas_inen.py` - las prohibiciones expresas de 6.1.7.10 b) como reglas,
+  mas la lectura de la Seccion 10.5 de cada SDS.
 - `scripts/generar_matriz_inen.py` - generador del modo normativo.
+- `scripts/plantilla.py` - plantilla HTML del entregable (encabezado, hallazgos, matriz
+  por producto, convenciones, inventario clasificado, Anexo K completo, vacios y
+  criterio aplicado, con casilleros de firma).
+- `scripts/simbolos.py` - rombos de clase ONU y pictogramas SGA como SVG en linea, para
+  que el HTML se abra sin conexion y se imprima.
 - `references/grupos-almacenamiento.md` - los 15 grupos, mapeo GHS y reglas de desempate.
 - `references/matriz-base.csv` - matriz 15x15 con codigos C / S / X.
 - `references/criterios-matriz.md` - que exige cada codigo en bodega, justificacion
