@@ -1,0 +1,8 @@
+codigo,producto,proveedor,cas,concentracion,clases_ghs,codigos_h,grupo,ubicacion,cantidad,incompat_sds,observaciones
+Q-001,Hipoclorito de sodio 10%,Quimpac,7681-52-9,10%,"Ox. Liq. 3; Skin Corr. 1B; Aquatic Acute 1","H272 H314 H400",G8,Bodega A - Estante 1,200 L,"Acidos, amoniaco, agentes reductores, metales",Libera cloro con acidos
+Q-002,Acido clorhidrico 33%,Brenntag,7647-01-0,33%,"Met. Corr. 1; Skin Corr. 1B; STOT SE 3","H290 H314 H335",G11,Bodega A - Estante 3,120 L,"Hipoclorito, bases fuertes, metales, cianuros",
+Q-003,Soda caustica escamas,Brenntag,1310-73-2,99%,"Met. Corr. 1; Skin Corr. 1A","H290 H314",G14,Bodega A - Estante 4,500 kg,"Acidos, aluminio, zinc, agua (exotermico)",Mantener seco
+Q-004,Diesel 2,Primax,68476-34-6,100%,"Flam. Liq. 3; Asp. Tox. 1; Aquatic Chronic 2","H226 H304 H411",G5,Bodega B - Cubeto 1,1000 L,"Oxidantes fuertes",
+Q-005,Thinner laca,Pinturas Unidas,-,100%,"Flam. Liq. 2; STOT SE 3; Asp. Tox. 1","H225 H336 H304",G5,Bodega B - Cubeto 1,60 L,"Oxidantes fuertes, acidos fuertes",
+Q-006,Oxigeno industrial cilindro,Indura,7782-44-7,99.5%,"Ox. Gas 1; Press. Gas","H270 H280",G4,Patio de gases,8 cil,"Aceites, grasas, materiales combustibles",Nunca con grasa en valvulas
+Q-007,Detergente alcalino neutro,Local,-,-,"Eye Irrit. 2","H319",G15,Bodega A - Estante 6,80 L,SIN DATO,SDS sin seccion 10.5 util
