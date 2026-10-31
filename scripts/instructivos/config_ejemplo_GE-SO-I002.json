@@ -1,0 +1,243 @@
+{
+  "codigo": "GE-SO-I002",
+  "titulo": "Estándar de Requerimientos en Sitio para Contratistas",
+  "version": "01",
+  "fecha": "2024-11",
+  "elaborado_por": "Pasante de Seguridad y Ambiente",
+  "revisado_por": "Jefe de Seguridad y Ambiente",
+  "aprobado_por": "Gerente de Planta",
+
+  "objetivo": "Establecer los requisitos mínimos de seguridad, salud y ambiente que deben cumplir los contratistas y su personal antes, durante y después de la ejecución de trabajos dentro de las instalaciones de Plantabal, asegurando condiciones seguras de trabajo y el cumplimiento de la normativa vigente.",
+
+  "alcance": "Aplica a todo el personal contratista, subcontratistas y proveedores que realicen actividades de mantenimiento, construcción, servicios o cualquier trabajo dentro de las instalaciones de Plantabal. Es de cumplimiento obligatorio para el personal de Seguridad y Ambiente, Supervisores de Área y Responsables de Contratos.",
+
+  "definiciones": [
+    { "termino": "ART (Análisis de Riesgo de Tarea)", "definicion": "Documento que identifica los peligros y riesgos asociados a una tarea específica y define las medidas de control previas a su ejecución." },
+    { "termino": "Permiso de Trabajo (PT)", "definicion": "Autorización formal requerida para la ejecución de trabajos de alto riesgo. Incluye la valoración médica del trabajador y las medidas de seguridad específicas." },
+    { "termino": "Trabajo de Alto Riesgo (TAR)", "definicion": "Actividades con alto potencial de causar lesiones graves o fatales: trabajo en caliente (soldadura, corte), trabajo eléctrico, trabajo en altura, espacio confinado, excavación, izaje de cargas." },
+    { "termino": "GE-SO-R34", "definicion": "Formulario de ingreso de contratistas. Registra datos del trabajador, empresa, documentación requerida y autorización de acceso a planta." },
+    { "termino": "EPP", "definicion": "Equipo de Protección Personal. Equipamiento que protege al trabajador de riesgos que no pueden eliminarse o controlarse por otros medios." },
+    { "termino": "Señalización de Seguridad", "definicion": "Elementos visuales (cintas, conos, letreros, barreras) que delimitan el área de trabajo y alertan sobre los peligros presentes." },
+    { "termino": "Dispositivos de Seguridad", "definicion": "Equipos colectivos de protección: guardas, bloqueos, interruptores de seguridad, sistemas de detección y extinción." }
+  ],
+
+  "responsabilidades": [
+    {
+      "cargo": "Técnico de Seguridad y Ambiente",
+      "responsabilidad": "Verificar el cumplimiento de todos los requisitos de ingreso (GE-SO-R34, documentación vigente). Emitir y controlar los permisos de trabajo. Realizar inspección del área antes y después de la tarea. Capacitar en caso de incumplimiento."
+    },
+    {
+      "cargo": "Enfermera / Personal de Dispensario",
+      "responsabilidad": "Realizar la valoración médica pre-tarea (signos vitales, aptitud). Emitir la parte médica del permiso de trabajo. Notificar al técnico de seguridad si el trabajador no se presenta en área en el tiempo establecido."
+    },
+    {
+      "cargo": "Supervisor del Área Solicitante",
+      "responsabilidad": "Solicitar formalmente el trabajo a Seguridad con suficiente anticipación. Asegurarse que el área esté preparada y despejada. Participar en la elaboración del ART. Supervisar la correcta ejecución del trabajo."
+    },
+    {
+      "cargo": "Supervisor / Capataz de la Contratista",
+      "responsabilidad": "Garantizar que su personal cuente con toda la documentación vigente, EPP adecuado y herramientas en buen estado. Participar en el ART. Asegurar el cumplimiento del permiso de trabajo durante toda la ejecución."
+    },
+    {
+      "cargo": "Trabajador Contratista",
+      "responsabilidad": "Presentar documentación personal vigente en el ingreso. Utilizar correctamente el EPP asignado. Cumplir las medidas de control establecidas en el ART y el permiso de trabajo. No iniciar trabajos sin la autorización respectiva."
+    }
+  ],
+
+  "desarrollo": [
+    {
+      "fase": "FASE 1 — INGRESO Y VERIFICACIÓN DOCUMENTAL (GE-SO-R34)",
+      "actividades": [
+        {
+          "actividad": "El trabajador contratista se presenta en portería/seguridad con cédula de identidad y documentación requerida: inducción vigente, certificado médico laboral vigente, afiliación IESS al día.",
+          "responsable": "Trabajador Contratista",
+          "notificar": "Técnico de Seguridad"
+        },
+        {
+          "actividad": "El técnico de seguridad verifica en el Consolidado de Contratistas que el personal tiene: Inducción vigente (G=✔ Vigente), Afiliación IESS al día (mes anterior o actual), Certificado Médico Laboral vigente (J=✔ Vigente) y Aptitud=APTO.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": ""
+        },
+        {
+          "actividad": "Si algún documento está vencido o faltante, se deniega el ingreso y se comunica al supervisor de la contratista para regularización. No se permite el ingreso hasta cumplir todos los requisitos.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": "Supervisor Contratista"
+        },
+        {
+          "actividad": "Se completa el formulario GE-SO-R34 con los datos del trabajador, empresa, área a trabajar, actividad a realizar y hora de ingreso. El trabajador firma.",
+          "responsable": "Técnico de Seguridad / Trabajador",
+          "notificar": ""
+        }
+      ]
+    },
+    {
+      "fase": "FASE 2 — VALORACIÓN MÉDICA Y PERMISO DE TRABAJO (Aplica solo para TAR)",
+      "actividades": [
+        {
+          "actividad": "Para trabajos de alto riesgo (TAR), el trabajador se dirige a Dispensario Médico con el formulario de permiso de trabajo. La enfermera realiza valoración: toma de signos vitales, evaluación de aptitud para la tarea específica.",
+          "responsable": "Enfermera / Dispensario",
+          "notificar": "Técnico de Seguridad"
+        },
+        {
+          "actividad": "La enfermera completa y firma la sección médica del permiso de trabajo. Si el trabajador no está apto, se suspende la autorización y se notifica al área solicitante y supervisor contratista.",
+          "responsable": "Enfermera",
+          "notificar": "Técnico de Seguridad, Supervisor Área"
+        },
+        {
+          "actividad": "NOTA DE TIEMPO: El trabajador tiene máximo 20 minutos desde la emisión del permiso en Dispensario para presentarse en el área de trabajo. Si transcurre este tiempo sin presentarse, el técnico de seguridad cancela el permiso y el trabajador deberá reiniciar el proceso.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": "Supervisor Contratista"
+        }
+      ]
+    },
+    {
+      "fase": "FASE 3 — ART Y PERMISO DE TRABAJO EN SITIO",
+      "actividades": [
+        {
+          "actividad": "En el área de trabajo, el técnico de seguridad, el supervisor del área solicitante y el supervisor contratista realizan conjuntamente el Análisis de Riesgo de Tarea (ART): identifican peligros, evalúan riesgos y definen medidas de control específicas para la tarea.",
+          "responsable": "Técnico de Seguridad + Supervisor Área + Supervisor Contratista",
+          "notificar": ""
+        },
+        {
+          "actividad": "Se verifica que el trabajador cuente con el EPP completo y adecuado para la tarea: casco, gafas, guantes, calzado de seguridad, arnés (si aplica), protección auditiva (si aplica), ropa de trabajo, equipo especial según el tipo de TAR.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": ""
+        },
+        {
+          "actividad": "Se revisan las herramientas y equipos a utilizar: estado físico, certificaciones vigentes (eslingas, equipos eléctricos), calibraciones. Se rechaza cualquier herramienta en mal estado.",
+          "responsable": "Supervisor Contratista + Técnico de Seguridad",
+          "notificar": ""
+        },
+        {
+          "actividad": "El técnico de seguridad y el supervisor del área firman el permiso de trabajo. Sin esta doble firma, el trabajo NO puede iniciarse.",
+          "responsable": "Técnico de Seguridad + Supervisor Área",
+          "notificar": ""
+        }
+      ]
+    },
+    {
+      "fase": "FASE 4 — SEÑALIZACIÓN, DISPOSITIVOS DE SEGURIDAD Y PREPARACIÓN DEL ÁREA",
+      "actividades": [
+        {
+          "actividad": "Delimitar y señalizar el área de trabajo con cinta de peligro, conos o barreras según corresponda. La señalización debe impedir el acceso de personal no autorizado al área.",
+          "responsable": "Trabajador Contratista + Supervisor Contratista",
+          "notificar": "Técnico de Seguridad"
+        },
+        {
+          "actividad": "Para trabajo en caliente: verificar la presencia de al menos un extintor PQS de 10 lb cargado y accesible a menos de 5 metros del punto de trabajo. El extintor debe tener inspección mensual vigente.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": ""
+        },
+        {
+          "actividad": "Aplicar procedimientos de bloqueo/etiquetado (LOTO) cuando se trabaje con equipos energizados. Ningún equipo en mantenimiento puede energizarse sin retirar el candado del trabajador que realiza la tarea.",
+          "responsable": "Trabajador Contratista + Técnico de Seguridad",
+          "notificar": "Supervisor Área"
+        },
+        {
+          "actividad": "Revisar el procedimiento de trabajo específico (si existe) y socializar con el trabajador contratista los pasos críticos y las medidas de control definidas en el ART.",
+          "responsable": "Supervisor Contratista",
+          "notificar": ""
+        }
+      ]
+    },
+    {
+      "fase": "FASE 5 — EJECUCIÓN DEL TRABAJO",
+      "actividades": [
+        {
+          "actividad": "Inicio del trabajo únicamente con permiso firmado y vigente. El trabajador debe mantener el permiso de trabajo en el área de trabajo durante toda la ejecución.",
+          "responsable": "Trabajador Contratista",
+          "notificar": ""
+        },
+        {
+          "actividad": "El técnico de seguridad realiza inspecciones periódicas durante la ejecución del trabajo para verificar el cumplimiento de las medidas de control y condiciones seguras.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": ""
+        },
+        {
+          "actividad": "Cualquier condición insegura, accidente o casi-accidente debe detenerse de inmediato y reportarse al técnico de seguridad. Se suspende el trabajo hasta que la condición sea corregida.",
+          "responsable": "Trabajador Contratista / Supervisor Contratista",
+          "notificar": "Técnico de Seguridad"
+        }
+      ]
+    },
+    {
+      "fase": "FASE 6 — CIERRE DEL PERMISO Y ENTREGA DEL ÁREA",
+      "actividades": [
+        {
+          "actividad": "Al finalizar el trabajo, el supervisor contratista notifica al técnico de seguridad y al supervisor del área. Se realiza inspección conjunta del área de trabajo.",
+          "responsable": "Supervisor Contratista",
+          "notificar": "Técnico de Seguridad + Supervisor Área"
+        },
+        {
+          "actividad": "Retirar toda la señalización (cintas, conos, letreros), herramientas, equipos y materiales sobrantes del área. El área debe quedar en las mismas condiciones o mejores a las encontradas al inicio.",
+          "responsable": "Trabajador Contratista + Supervisor Contratista",
+          "notificar": ""
+        },
+        {
+          "actividad": "El técnico de seguridad y el supervisor del área verifican el área y firman el cierre del permiso de trabajo. Se registra hora de finalización.",
+          "responsable": "Técnico de Seguridad + Supervisor Área",
+          "notificar": ""
+        },
+        {
+          "actividad": "El trabajador registra su salida en el formulario GE-SO-R34. Se archiva el permiso de trabajo cerrado.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": ""
+        }
+      ]
+    },
+    {
+      "fase": "FASE 7 — DISPOSICIÓN DE RESIDUOS",
+      "actividades": [
+        {
+          "actividad": "Clasificar los residuos generados según el tipo: residuos comunes (negro), reciclables (verde/azul), residuos peligrosos (rojo — trapos con aceite, solventes, pintura, escoria de soldadura, etc.).",
+          "responsable": "Trabajador Contratista + Supervisor Contratista",
+          "notificar": "Técnico de Seguridad"
+        },
+        {
+          "actividad": "Los residuos peligrosos deben depositarse en los contenedores rojos designados para residuos peligrosos. Queda prohibido mezclarlos con residuos comunes o abandonarlos en el área de trabajo.",
+          "responsable": "Trabajador Contratista",
+          "notificar": ""
+        },
+        {
+          "actividad": "El técnico de seguridad verifica la correcta disposición de residuos como parte del cierre del permiso. La disposición inadecuada de residuos constituye un incumplimiento y puede ser causal de suspensión del contratista.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": "Supervisor Área"
+        }
+      ]
+    },
+    {
+      "fase": "FASE 8 — INCUMPLIMIENTOS Y SANCIONES",
+      "actividades": [
+        {
+          "actividad": "Ante cualquier incumplimiento de este estándar (inicio de trabajo sin permiso, EPP inadecuado, señalización ausente, disposición incorrecta de residuos, etc.), el técnico de seguridad tiene autoridad para suspender inmediatamente el trabajo.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": "Supervisor Área + Jefe de Seguridad"
+        },
+        {
+          "actividad": "Los incumplimientos se registran en el formulario de observación de seguridad y se comunican formalmente a la empresa contratista. La reincidencia puede resultar en la suspensión temporal o definitiva del contratista en las instalaciones de Plantabal.",
+          "responsable": "Técnico de Seguridad",
+          "notificar": "Jefe de Seguridad + Responsable de Contratos"
+        }
+      ]
+    }
+  ],
+
+  "documentos_referencia": [
+    { "codigo": "GE-SO-R34",  "nombre": "Registro de Ingreso de Contratistas",         "tipo": "Registro" },
+    { "codigo": "GE-SO-R35",  "nombre": "Permiso de Trabajo / Valoración Médica",       "tipo": "Registro" },
+    { "codigo": "GE-SO-R12",  "nombre": "ART — Análisis de Riesgo de Tarea",            "tipo": "Registro" },
+    { "codigo": "GE-SO-I001", "nombre": "Instructivo de Inducción a Contratistas",      "tipo": "Instructivo" },
+    { "codigo": "GE-SO-P001", "nombre": "Procedimiento de Trabajos de Alto Riesgo",     "tipo": "Procedimiento" }
+  ],
+
+  "control_cambios": [
+    {
+      "version": "01",
+      "fecha": "2024-11",
+      "descripcion": "Emisión inicial",
+      "elabora": "Pasante de Seguridad y Ambiente",
+      "revisa": "Jefe de Seguridad y Ambiente",
+      "aprueba": "Gerente de Planta"
+    }
+  ]
+}
