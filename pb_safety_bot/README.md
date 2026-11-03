@@ -25,7 +25,19 @@ Bot de Telegram que consulta el Consolidado de Contratistas en tiempo real.
 
 ## Uso
 
-Escribe en Telegram el apellido, nombre o cédula del trabajador:
-- `Martinez` → busca por apellido
-- `Kevin` → busca por nombre  
-- `0912345678` → busca por cédula
+**Por persona** — escribe nombre, apellido o cédula:
+- `Martinez` · `Kevin Martinez` · `0912345678`
+
+**Por empresa** — el bot detecta el nombre de empresa del consolidado:
+- `trabajadores de Frank Meta`
+- `empresa Tecnólogo sin Valla con acceso`
+
+**Encadenado** — filtra sobre el listado anterior:
+- `de ellos, cuáles tienen inducción`
+- `de esos, cuáles tienen certificado médico`
+- `y cuáles tienen IESS al día`
+
+**El bot detecta automáticamente las columnas** del consolidado (inducción,
+cert. médico, aptitud, y cualquier columna adicional que tenga el sheet).
+
+**Comandos:** `/start` · `/ayuda` · `/refrescar` (recarga el consolidado ahora)
