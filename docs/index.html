@@ -1,0 +1,503 @@
+<title>Contratistas Plantabal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Contratistas%20Plantabal%22%2C%22short_name%22%3A%22Contratistas%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230d1117%22%2C%22theme_color%22%3A%22%23f6c90e%22%2C%22start_url%22%3A%22.%22%7D">
+
+<style>
+/* Layout: full-height app — sticky header + filters + scrollable list + bottom sheet modal */
+/* Palette: dark-first industrial safety, safety-yellow accent */
+:root {
+  --bg:       #0d1117;
+  --surf:     #161b22;
+  --surf2:    #1f2937;
+  --border:   #2d3748;
+  --fg:       #e2e8f0;
+  --muted:    #8b97a9;
+  --accent:   #f6c90e;
+  --accent-fg:#0d1117;
+  --ok:       #38c46a;
+  --bad:      #e05a3a;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:       #f0f4f8;
+    --surf:     #ffffff;
+    --surf2:    #edf2f7;
+    --border:   #d2dae2;
+    --fg:       #1a202c;
+    --muted:    #64748b;
+    --accent:   #c99700;
+    --accent-fg:#ffffff;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg:#f0f4f8;--surf:#fff;--surf2:#edf2f7;--border:#d2dae2;
+  --fg:#1a202c;--muted:#64748b;--accent:#c99700;--accent-fg:#fff;
+  color-scheme:light;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.5}
+body{display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:11;background:var(--bg)}
+
+/* ── SETUP ───────────────────────────────────────────────────────────── */
+#setup{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 0}
+.setup-icon{width:68px;height:68px;background:var(--accent);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 20px}
+#setup h1{font-size:22px;font-weight:700;letter-spacing:-.5px;margin:0 0 6px}
+#setup p{color:var(--muted);font-size:14px;margin:0 0 28px;max-width:300px}
+#url-input{width:100%;max-width:400px;padding:12px 14px;background:var(--surf);border:1.5px solid var(--border);border-radius:10px;color:var(--fg);font-size:14px;outline:none;margin-bottom:10px}
+#url-input:focus{border-color:var(--accent)}
+#url-input::placeholder{color:var(--muted)}
+#btn-setup{width:100%;max-width:400px;padding:13px;background:var(--accent);color:var(--accent-fg);border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+#setup-err{color:var(--bad);font-size:13px;margin-top:8px;min-height:18px}
+.setup-hint{font-size:12px;color:var(--muted);margin-top:14px;max-width:320px;line-height:1.6}
+
+/* ── HEADER ──────────────────────────────────────────────────────────── */
+#header{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 0}
+.hrow1{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.hrow1 .logo{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.hrow1 h1{margin:0;font-size:17px;font-weight:700;letter-spacing:-.3px;flex:1}
+#btn-refresh{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:5px 10px;font-size:12px;cursor:pointer;flex-shrink:0}
+#btn-refresh:active{opacity:.6}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;opacity:.5}
+#search{width:100%;padding:10px 12px 10px 36px;background:var(--surf);border:1.5px solid var(--border);border-radius:10px;color:var(--fg);font-size:15px;outline:none}
+#search:focus{border-color:var(--accent)}
+#search::placeholder{color:var(--muted)}
+
+/* ── FILTERS ─────────────────────────────────────────────────────────── */
+#filters{display:flex;gap:8px;overflow-x:auto;padding:8px 0;border-bottom:1px solid var(--border);scrollbar-width:none;flex-shrink:0}
+#filters::-webkit-scrollbar{display:none}
+#company-sel{flex-shrink:0;padding:7px 12px;background:var(--surf);border:1.5px solid var(--border);border-radius:20px;color:var(--fg);font-size:13px;outline:none;cursor:pointer;max-width:180px}
+.chip{flex-shrink:0;padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surf);color:var(--fg);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .15s;user-select:none}
+.chip.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+
+/* ── LIST ────────────────────────────────────────────────────────────── */
+#list-wrap{flex:1;overflow-y:auto;padding:6px 0 calc(env(safe-area-inset-bottom,0px)+12px)}
+#count{font-size:12px;color:var(--muted);padding:8px 0 4px;font-variant-numeric:tabular-nums}
+.card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:8px;cursor:pointer;display:flex;gap:11px;align-items:flex-start;transition:background .1s}
+.card:active{background:var(--surf2)}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.dot.ok{background:var(--ok)} .dot.bad{background:var(--bad)}
+.cname{font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.2px}
+.cmeta{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.pill{font-size:11px;padding:2px 8px;border-radius:9px;font-weight:500;white-space:nowrap}
+.pill.ok{background:rgba(56,196,106,.14);color:var(--ok)}
+.pill.bad{background:rgba(224,90,58,.14);color:var(--bad)}
+.pill.nd{background:var(--surf2);color:var(--muted)}
+
+/* ── EMPTY / LOADING ─────────────────────────────────────────────────── */
+.state-msg{text-align:center;padding:48px 24px;color:var(--muted)}
+.state-msg .ico{font-size:38px;margin-bottom:12px}
+.state-msg p{margin:4px 0;font-size:14px}
+
+/* ── MODAL ───────────────────────────────────────────────────────────── */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;backdrop-filter:blur(3px);display:flex;align-items:flex-end}
+#modal{background:var(--surf);border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:0 max(16px,env(safe-area-inset-left,0px)) calc(env(safe-area-inset-bottom,0px)+28px);border-top:1px solid var(--border)}
+.handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 18px}
+.mbadge{display:inline-block;padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:8px}
+.mbadge.ok{background:rgba(56,196,106,.18);color:var(--ok)}
+.mbadge.bad{background:rgba(224,90,58,.18);color:var(--bad)}
+.mname{font-size:21px;font-weight:700;letter-spacing:-.5px;line-height:1.2}
+.msub{font-size:13px;color:var(--muted);margin-top:5px}
+.sec{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:20px 0 8px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:12px}
+.row:last-child{border-bottom:none}
+.rlabel{font-size:14px}
+.rval{font-size:13px;font-weight:600;flex-shrink:0}
+.rval.ok{color:var(--ok)} .rval.bad{color:var(--bad)} .rval.nd{color:var(--muted)}
+#close-modal{width:100%;padding:13px;margin-top:4px;background:var(--surf2);border:1px solid var(--border);border-radius:10px;color:var(--fg);font-size:15px;font-weight:600;cursor:pointer}
+</style>
+
+<!-- SETUP SCREEN -->
+<div id="setup">
+  <div class="setup-icon">👷</div>
+  <h1>Verificador de Contratistas</h1>
+  <p>Pega el enlace CSV del consolidado de Google Sheets para comenzar.</p>
+  <input id="url-input" type="url" placeholder="https://docs.google.com/spreadsheets/…" autocomplete="off" spellcheck="false">
+  <button id="btn-setup">Conectar</button>
+  <div id="setup-err"></div>
+  <p class="setup-hint">Este enlace se guarda en tu dispositivo. Solo necesitas ingresarlo una vez.</p>
+</div>
+
+<!-- MAIN APP (hidden until data loads) -->
+<div id="app" hidden>
+  <div id="header">
+    <div class="hrow1">
+      <div class="logo">👷</div>
+      <h1>Contratistas</h1>
+      <button id="btn-refresh">↻ Actualizar</button>
+    </div>
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><line x1="10" y1="10" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <input id="search" type="search" placeholder="Nombre, apellido o cédula…" autocomplete="off">
+    </div>
+  </div>
+
+  <div id="filters">
+    <select id="company-sel">
+      <option value="">Todas las empresas</option>
+    </select>
+    <div class="chip" id="chip-acceso">✅ Con acceso</div>
+    <div class="chip" id="chip-iess">🏥 IESS vigente</div>
+    <div class="chip" id="chip-ind">📋 Inducción vigente</div>
+  </div>
+
+  <div id="list-wrap">
+    <div id="count"></div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="overlay" hidden>
+  <div id="modal">
+    <div class="handle"></div>
+    <div id="modal-content"></div>
+    <button id="close-modal">Cerrar</button>
+  </div>
+</div>
+
+<script>
+// Configurar aquí la URL CSV del Google Sheet (o dejar vacío para pantalla de setup)
+const SHEET_URL = '';  // Reemplaza con tu URL CSV si quieres omitir la pantalla de setup
+const STORAGE_URL = 'pb_csv_url_v1';
+const COL_DEFAULT = { apellido:1, nombres:2, empresa:3, cedula:4, acceso:11, iess:7, ind_vigente:6 };
+
+let state = {
+  workers: [],
+  headers: [],
+  colMap: {...COL_DEFAULT},
+  companies: [],
+  query: '',
+  company: '',
+  filterAcceso: false,
+  filterIESS: false,
+  filterInd: false,
+};
+
+// ── CSV parser ────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const rows = [];
+  let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      if (q && text[i+1] === '"') { f += '"'; i++; } else q = !q;
+    } else if (c === ',' && !q) { row.push(f); f = ''; }
+    else if ((c === '\n' || c === '\r') && !q) {
+      if (c === '\r' && text[i+1] === '\n') i++;
+      row.push(f); f = ''; rows.push(row); row = [];
+    } else f += c;
+  }
+  if (f || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+
+// ── Normalize (strip accents) ─────────────────────────────────────────
+function norm(s) {
+  return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+}
+
+// ── IESS date → Vigente/Vencido ───────────────────────────────────────
+function iessStatus(val) {
+  val = (val||'').trim();
+  if (!val || val === '-') return { text:'Sin dato', cls:'nd' };
+  const p = val.replace(/-/g,'/').split('/');
+  if (p.length === 3) {
+    try {
+      let [d,m,a] = p.map(Number);
+      if (a < 100) a += 2000;
+      const hoy = new Date();
+      const limM = hoy.getMonth() === 0 ? 11 : hoy.getMonth() - 1; // 0-based, previous month
+      const limY = hoy.getMonth() === 0 ? hoy.getFullYear()-1 : hoy.getFullYear();
+      if (new Date(a, m-1, 1) >= new Date(limY, limM, 1)) return { text:'Vigente', cls:'ok' };
+      return { text:'Vencido', cls:'bad' };
+    } catch(e){}
+  }
+  return { text: val, cls:'nd' };
+}
+
+// ── Generic cell status ───────────────────────────────────────────────
+function cellStatus(val) {
+  if (!val || !val.trim() || val.trim()==='-') return { text:'Sin dato', cls:'nd' };
+  const n = norm(val);
+  if (n.includes('vigente')||n.includes('apto')||n==='si'||n==='sí'||n.includes('aprobado')||n==='✔'||n==='ok')
+    return { text:val.trim(), cls:'ok' };
+  if (n.includes('vencido')||n.includes('no apto')||n.includes('rechazado'))
+    return { text:val.trim(), cls:'bad' };
+  if (n === 'no' || n === 'no ') return { text:'No', cls:'bad' };
+  return { text:val.trim(), cls:'nd' };
+}
+
+// ── Load data ─────────────────────────────────────────────────────────
+async function loadData(url) {
+  // Google Sheets CSV requires a CORS proxy when fetched from a browser
+  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+  const resp = await fetch(proxyUrl);
+  if (!resp.ok) throw new Error('HTTP '+resp.status);
+  const text = await resp.text();
+  const rows = parseCSV(text);
+
+  const headers = (rows[3]||[]).map(h=>h.trim());
+  const colMap = {...COL_DEFAULT};
+
+  headers.forEach((h,i)=>{
+    const n = norm(h);
+    if (n.includes('apellido')) colMap.apellido = i;
+    else if (n.includes('nombre') && !n.includes('empresa')) colMap.nombres = i;
+    else if (n.includes('empresa') || n.includes('contratista')) colMap.empresa = i;
+    else if (n.includes('cedula')||n.includes('cédula')||n==='ci'||n==='ruc') colMap.cedula = i;
+    else if (n.includes('acceso')) colMap.acceso = i;
+    else if (n.includes('iess')) colMap.iess = i;
+    else if (n.includes('induccion')||n.includes('inducción')) {
+      if (!n.includes('fecha')) colMap.ind_vigente = i;
+    }
+  });
+
+  const companies = new Set();
+  const workers = [];
+  for (let i=5; i<rows.length; i++) {
+    const row = rows[i];
+    if (!row || !(row[colMap.apellido]||'').trim()) continue;
+    workers.push(row);
+    const emp = (row[colMap.empresa]||'').trim();
+    if (emp) companies.add(emp);
+  }
+
+  state.workers = workers;
+  state.headers = headers;
+  state.colMap = colMap;
+  state.companies = [...companies].sort();
+  return workers.length;
+}
+
+// ── Acceso helper ─────────────────────────────────────────────────────
+function accesoOk(row) {
+  return (row[state.colMap.acceso]||'').toUpperCase().includes('PERMITIDO');
+}
+
+// ── Filter ────────────────────────────────────────────────────────────
+function filtered() {
+  const q = norm(state.query);
+  const tokens = q.split(/\s+/).filter(Boolean);
+  const { colMap } = state;
+
+  return state.workers.filter(row => {
+    if (state.company && (row[colMap.empresa]||'').trim() !== state.company) return false;
+    if (state.filterAcceso && !accesoOk(row)) return false;
+    if (state.filterIESS) {
+      if (iessStatus((row[colMap.iess]||'')).cls !== 'ok') return false;
+    }
+    if (state.filterInd) {
+      if (cellStatus((row[colMap.ind_vigente]||'')).cls !== 'ok') return false;
+    }
+    if (tokens.length) {
+      const full = norm(row[colMap.apellido]||'')+' '+norm(row[colMap.nombres]||'');
+      const ced  = (row[colMap.cedula]||'').trim();
+      if (q !== ced && !tokens.every(t=>full.includes(t))) return false;
+    }
+    return true;
+  });
+}
+
+// ── Render list ───────────────────────────────────────────────────────
+function renderList() {
+  const rows = filtered();
+  const { colMap, headers } = state;
+  const list = document.getElementById('list');
+  document.getElementById('count').textContent =
+    rows.length === 0 ? '' :
+    rows.length === 1 ? '1 trabajador encontrado' :
+    `${rows.length} trabajadores encontrados`;
+
+  if (!rows.length) {
+    list.innerHTML = `<div class="state-msg"><div class="ico">🔍</div><p>Sin resultados.</p><p>Prueba con otro nombre o limpia los filtros.</p></div>`;
+    return;
+  }
+
+  const html = rows.map(row => {
+    const nombre  = `${(row[colMap.apellido]||'').trim()} ${(row[colMap.nombres]||'').trim()}`;
+    const empresa = (row[colMap.empresa]||'').trim();
+    const cedula  = (row[colMap.cedula]||'').trim();
+    const ok      = accesoOk(row);
+
+    // Build status pills for important columns
+    const pills = [];
+    // Inducción
+    const indS = cellStatus(row[colMap.ind_vigente]||'');
+    pills.push(`<span class="pill ${indS.cls}">Ind: ${indS.text}</span>`);
+    // IESS
+    const iessS = iessStatus(row[colMap.iess]||'');
+    pills.push(`<span class="pill ${iessS.cls}">IESS: ${iessS.text}</span>`);
+    // Extra columns (12+)
+    headers.forEach((h,i) => {
+      if (i <= 11 || !h) return;
+      const s = cellStatus(row[i]||'');
+      if (s.cls === 'ok') pills.push(`<span class="pill ok">${h}</span>`);
+    });
+
+    return `<div class="card" data-idx="${state.workers.indexOf(row)}">
+      <div class="dot ${ok?'ok':'bad'}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="cname">${nombre}</div>
+        <div class="cmeta">${empresa}${cedula?' · '+cedula:''}</div>
+        <div class="pills">${pills.join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.innerHTML = html;
+  list.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => openModal(state.workers[+card.dataset.idx]));
+  });
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────
+function openModal(row) {
+  const { colMap, headers } = state;
+  const nombre  = `${(row[colMap.apellido]||'').trim()} ${(row[colMap.nombres]||'').trim()}`;
+  const empresa = (row[colMap.empresa]||'').trim();
+  const cedula  = (row[colMap.cedula]||'').trim();
+  const ok      = accesoOk(row);
+  const accText = ok ? 'ACCESO PERMITIDO' : 'SIN ACCESO';
+
+  // Build all column rows
+  const certRows = [];
+  // Fixed known cols
+  const certCols = [
+    { label:'Inducción', idx: colMap.ind_vigente, special: false },
+    { label:'IESS',      idx: colMap.iess,        special: true  },
+  ];
+  // Find more vigente/fecha columns between 5 and 11
+  headers.forEach((h,i)=>{
+    if (i < 5 || i > 11 || !h) return;
+    if (i === colMap.iess || i === colMap.ind_vigente) return;
+    const n = norm(h);
+    if (n.includes('vigente')||n.includes('apto')||n.includes('aptitud')||n.includes('acceso')) return; // acceso shown in badge
+    certCols.push({ label: h, idx: i, special: false });
+  });
+  // Extra cols beyond 11
+  headers.forEach((h,i)=>{
+    if (i <= 11 || !h) return;
+    certCols.push({ label: h, idx: i, special: false });
+  });
+
+  certCols.forEach(({label,idx,special})=>{
+    const val = row[idx]||'';
+    const s = special ? iessStatus(val) : cellStatus(val);
+    certRows.push(`<div class="row">
+      <span class="rlabel">${label}</span>
+      <span class="rval ${s.cls}">${s.text}</span>
+    </div>`);
+  });
+
+  // Acceso row
+  const accRow = `<div class="row">
+    <span class="rlabel">Acceso a planta</span>
+    <span class="rval ${ok?'ok':'bad'}">${ok?'Permitido':'Denegado'}</span>
+  </div>`;
+
+  document.getElementById('modal-content').innerHTML = `
+    <div class="mbadge ${ok?'ok':'bad'}">${accText}</div>
+    <div class="mname">${nombre}</div>
+    <div class="msub">${empresa}${cedula?` &nbsp;·&nbsp; <span style="font-variant-numeric:tabular-nums">${cedula}</span>`:''}</div>
+    <div class="sec">Estado de documentos</div>
+    ${accRow}
+    ${certRows.join('')}
+  `;
+
+  document.getElementById('overlay').hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('overlay').hidden = true;
+  document.body.style.overflow = '';
+}
+
+// ── Company select ────────────────────────────────────────────────────
+function buildCompanySel() {
+  const sel = document.getElementById('company-sel');
+  sel.innerHTML = '<option value="">Todas las empresas</option>' +
+    state.companies.map(c=>`<option value="${c.replace(/"/g,'&quot;')}">${c}</option>`).join('');
+}
+
+// ── Init app ──────────────────────────────────────────────────────────
+async function initApp(url) {
+  document.getElementById('app').hidden = false;
+  document.getElementById('setup').hidden = true;
+  document.getElementById('list').innerHTML = `<div class="state-msg"><div class="ico">⏳</div><p>Cargando consolidado…</p></div>`;
+  try {
+    const n = await loadData(url);
+    buildCompanySel();
+    renderList();
+    document.getElementById('count').textContent = `${n} trabajadores cargados`;
+  } catch(e) {
+    document.getElementById('list').innerHTML = `<div class="state-msg"><div class="ico">⚠️</div><p>No se pudo cargar el consolidado.</p><p>Verifica que el Sheet esté publicado como CSV.</p></div>`;
+  }
+}
+
+// ── Event wiring ──────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', e => {
+  state.query = e.target.value;
+  renderList();
+});
+
+document.getElementById('company-sel').addEventListener('change', e => {
+  state.company = e.target.value;
+  renderList();
+});
+
+function toggleChip(id, key) {
+  const el = document.getElementById(id);
+  el.addEventListener('click', () => {
+    state[key] = !state[key];
+    el.classList.toggle('on', state[key]);
+    renderList();
+  });
+}
+toggleChip('chip-acceso','filterAcceso');
+toggleChip('chip-iess','filterIESS');
+toggleChip('chip-ind','filterInd');
+
+document.getElementById('btn-refresh').addEventListener('click', async () => {
+  const url = (() => { try { return localStorage.getItem(STORAGE_URL)||''; } catch(e){ return ''; } })();
+  if (!url) return;
+  document.getElementById('btn-refresh').textContent = '…';
+  try { await loadData(url); buildCompanySel(); renderList(); } catch(e){}
+  document.getElementById('btn-refresh').textContent = '↻ Actualizar';
+});
+
+document.getElementById('close-modal').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', e => { if (e.target===document.getElementById('overlay')) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+
+// ── Setup ─────────────────────────────────────────────────────────────
+document.getElementById('btn-setup').addEventListener('click', async () => {
+  const url = document.getElementById('url-input').value.trim();
+  const err = document.getElementById('setup-err');
+  if (!url || !url.startsWith('http')) { err.textContent='Pega un enlace válido.'; return; }
+  err.textContent = 'Conectando…';
+  try {
+    await loadData(url);
+    try { localStorage.setItem(STORAGE_URL, url); } catch(e){}
+    buildCompanySel();
+    document.getElementById('setup').hidden = true;
+    document.getElementById('app').hidden = false;
+    renderList();
+  } catch(e) {
+    err.textContent = 'No se pudo conectar. Verifica que el Sheet esté publicado como CSV.';
+  }
+});
+
+// ── Auto-start si hay URL guardada o hardcodeada ─────────────────────
+(function(){
+  let url = SHEET_URL;
+  try { url = localStorage.getItem(STORAGE_URL) || SHEET_URL; } catch(e){}
+  if (url) initApp(url);
+})();
+</script>
