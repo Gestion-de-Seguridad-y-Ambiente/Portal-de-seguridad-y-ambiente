@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Contratistas Plantabal",
+    "slug": "pb-safety-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0d1117"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#f6c90e"
+      },
+      "package": "com.plantabal.contratistas"
+    },
+    "extra": {
+      "sheetCsvUrl": "PEGAR_AQUI_URL_CSV_DE_GOOGLE_SHEETS",
+      "geminiApiKey": "PEGAR_AQUI_API_KEY_DE_GEMINI"
+    }
+  }
+}
