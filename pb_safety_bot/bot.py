@@ -2,7 +2,8 @@
 Pb_safety_bot — Verificador de contratistas Plantabal
 Lee el consolidado desde un Google Sheet publicado como CSV.
 """
-import os, csv, io, unicodedata, logging
+import os, csv, io, unicodedata, logging, re
+from datetime import date
 import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
@@ -51,15 +52,50 @@ def cargar_datos() -> list[dict]:
         filas.append(row)
     return filas
 
+def iess_vigente(valor: str) -> str:
+    """
+    El campo IESS contiene la fecha de última afiliación (ej: '1/9/2026').
+    Está vigente si el mes/año es >= mes anterior al actual.
+    Retorna 'Vigente' o 'Vencido'.
+    """
+    valor = valor.strip()
+    if not valor:
+        return ""
+    try:
+        partes = valor.replace("-", "/").split("/")
+        if len(partes) == 3:
+            # puede venir d/m/a o m/d/a — asumimos d/m/a como el sheet en español
+            d, m, a = int(partes[0]), int(partes[1]), int(partes[2])
+            if a < 100:
+                a += 2000
+            hoy = date.today()
+            # vigente si la fecha IESS es del mes anterior o posterior
+            limite = date(hoy.year if hoy.month > 1 else hoy.year - 1,
+                          hoy.month - 1 if hoy.month > 1 else 12, 1)
+            if date(a, m, 1) >= limite:
+                return "Vigente"
+            else:
+                return "Vencido"
+    except Exception:
+        pass
+    return valor  # si no se puede parsear, retorna el valor crudo
+
 def buscar_trabajador(query: str, filas: list) -> list:
-    """Busca por nombre (apellido o nombres) o cédula."""
+    """Busca por nombre (apellido o nombres, soporta 'Martinez Kevin') o cédula."""
     q = normalizar(query.strip())
+    tokens = q.split()
     resultados = []
     for row in filas:
         apellido = normalizar(row[COL["apellido"]])
         nombres  = normalizar(row[COL["nombres"]])
         cedula   = row[COL["cedula"]].strip()
-        if q in apellido or q in nombres or q == cedula:
+        nombre_completo = apellido + " " + nombres
+        # cédula exacta
+        if q == cedula:
+            resultados.append(row)
+            continue
+        # todos los tokens deben aparecer en el nombre completo
+        if all(t in nombre_completo for t in tokens):
             resultados.append(row)
     return resultados
 
@@ -76,12 +112,13 @@ def formatear_resultado(row: list) -> str:
         encabezado = "🚫 *SIN ACCESO*"
 
     ind  = row[COL["ind_vigente"]].strip()
-    iess = row[COL["iess"]].strip()
+    iess_raw = row[COL["iess"]].strip()
+    iess = iess_vigente(iess_raw)
     med  = row[COL["med_vigente"]].strip()
     apt  = row[COL["aptitud"]].strip()
 
-    def icono(val, ok_text="✔"):
-        return "✅" if ok_text in val else "❌"
+    def icono(val, ok_text="VIGENTE"):
+        return "✅" if ok_text.upper() in val.upper() else "❌"
 
     lineas = [
         encabezado,
@@ -90,10 +127,10 @@ def formatear_resultado(row: list) -> str:
         f"🏭 Empresa: {empresa}",
         f"🪪 Cédula: {cedula}",
         f"",
-        f"{icono(ind)} Inducción: {ind}",
-        f"{icono(iess, 'IESS') if iess else '❌'} IESS: {iess or 'Sin dato'}",
-        f"{icono(med)} Cert. Médico: {med}",
-        f"{icono(apt, 'APTO')} Aptitud: {apt}",
+        f"{icono(ind, 'VIGENTE')} Inducción: {ind}",
+        f"{'✅' if iess == 'Vigente' else '❌'} IESS: {iess or 'Sin dato'}",
+        f"{icono(med, 'VIGENTE')} Cert. Médico: {med}",
+        f"{'✅' if 'APTO' in apt.upper() else '❌'} Aptitud: {apt}",
     ]
     return "\n".join(lineas)
 
@@ -117,10 +154,31 @@ async def ayuda(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown"
     )
 
+PALABRAS_PREGUNTA = {"tiene", "puede", "esta", "está", "es", "cumple", "tiene",
+                     "certificado", "apto", "acceso", "vigente", "vencido",
+                     "induccion", "inducción", "iess", "medico", "médico",
+                     "altura", "riesgo", "riesgos", "laboral", "trabajo"}
+
+def es_pregunta_natural(texto: str) -> bool:
+    """Detecta si el mensaje es una pregunta sobre certificados, no un nombre."""
+    if texto.endswith("?") or texto.startswith("¿"):
+        return True
+    tokens = set(normalizar(texto).split())
+    return len(tokens & PALABRAS_PREGUNTA) >= 2
+
 async def consultar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.message.text.strip()
     if len(query) < 3:
         await update.message.reply_text("⚠️ Escribe al menos 3 caracteres para buscar.")
+        return
+
+    if es_pregunta_natural(query):
+        await update.message.reply_text(
+            "💡 Para consultar el estado de un trabajador, escribe directamente "
+            "su *apellido*, *nombre* o *número de cédula*.\n\n"
+            "_Ejemplos:_\n`Martinez`\n`Martinez Kevin`\n`0912345678`",
+            parse_mode="Markdown"
+        )
         return
 
     await update.message.reply_text("🔍 Buscando...")
